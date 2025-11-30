@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { useBookedSeats } from "@/context/BookedSeatsContext";
 import { SearchTicket } from "../search-ticket";
+import { toast } from "sonner";
 
 interface FormCheckoutSeatDialogProps {
     isOpen: boolean;
@@ -20,6 +21,26 @@ export function FormCheckoutSeatDialog({ isOpen, onOpenChange }: FormCheckoutSea
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault(); // prevent reload
+        // Cek apakah ada kursi yang belum dipilih tiketnya
+        const seatsWithoutTicket = authSelectedSeats.filter((locked) => {
+            const ticketId = (locked as unknown as { ticket_id?: string }).ticket_id;
+            return !ticketId || ticketId.trim() === "";
+        });
+
+        if (seatsWithoutTicket.length > 0) {
+            const missingSeatLabels = seatsWithoutTicket.map((locked) => {
+                const seat = seats.find((s) => s.id === locked.seat_id);
+                return seat ? `${seat.name} (${seat.category})` : locked.seat_id;
+            }).join(", ");
+
+            toast.info(
+                missingSeatLabels
+                    ? `Harap pilih tiket untuk kursi: ${missingSeatLabels}`
+                    : "Harap pilih tiket untuk semua kursi yang dipilih."
+            );
+            return; // jangan lanjut proses
+        }
+
         await claimBookingSeats();
         onOpenChange(false); // close dialog after submit
     };

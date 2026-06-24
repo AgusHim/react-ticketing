@@ -14,9 +14,19 @@ export type SeatsContextType = {
     setSeats: React.Dispatch<React.SetStateAction<Seat[]>>;
     toggleSeat: (id: string) => void;
     updateSeat: () => void;
-    countByCategory: Record<string, { total: number; color: string }>;
+    updateSeatCoordinates: (id: string, x: number, y: number, rotation: number, width?: number, height?: number) => void;
+    updateMultipleSeatCoordinates: (updates: { id: string, x: number, y: number, rotation: number, width?: number, height?: number }[]) => void;
+    
+    // Global Selection & Bulk Actions
+    selectedIds: string[];
+    setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
+    updateSelectedSeatsProperties: (color: string, category: string, prefix?: string, rotation?: number) => void;
+    deleteSelectedSeats: () => void;
+
+    countByCategory: Record<string, { total: number; color: string; category: string; gender: string }>;
     removeSeat: (id: string) => void;
     createSeat: (id: string) => void;
+    createStage: () => void;
     generateReset: () => void;
     generateSeats: () => void;
 };

@@ -4,7 +4,8 @@ import {
   IconLayout,
   IconChairDirector,
   IconTicket,
-  IconTable
+  IconTable,
+  IconCalendarEvent
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -31,6 +32,11 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Events",
+      url: "/events",
+      icon: IconCalendarEvent,
     },
     {
       title: "Booked Seats",

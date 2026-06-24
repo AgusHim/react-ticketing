@@ -21,3 +21,7 @@ export const deleteSeat = async (id: string): Promise<void> => {
 export const putSeat = async (id: string, seat: Seat): Promise<void> => {
   await admin_api.put(`/admin_api/seats/${encodeURIComponent(id)}`, seat);
 };
+
+export const saveBulkLayout = async (seats: Seat[]): Promise<void> => {
+  await admin_api.post("/admin_api/seats/layout", seats);
+};

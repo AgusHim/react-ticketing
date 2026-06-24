@@ -1,10 +1,11 @@
-// context/SeatsContext.tsx
 import React, { createContext, useContext } from 'react';
 import type { Seat, SeatLocked } from '@/types/seat';
 import type { BookedSeat } from '@/types/booked-seat';
 import type { Ticket } from '@/types/ticket';
+import type { EventModel } from '@/api/event-api';
 
 export type BookedSeatsContextType = {
+    events: EventModel[];
     seats: Seat[];
     selectedSeats: SeatLocked[];
     authSelectedSeats: SeatLocked[];

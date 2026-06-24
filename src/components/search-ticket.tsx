@@ -80,7 +80,7 @@ export function SearchTicket({ seat }: SearchTicketProps) {
                                         <div className="text-sm font-medium">
                                             {item.ticket_id} <span className="ml-2">{item.name}</span>
                                         </div>
-                                        <div className="text-xs text-muted-foreground">{`${item.ticket_name} - ${item.show_id}`}</div>
+                                        <div className="text-xs text-muted-foreground">{`${item.ticket_name} - ${item.event_id || item.show_id || ''}`}</div>
                                         <div className="text-xs text-muted-foreground">{item.email}</div>
                                         {isBooked && bookedSeat && (
                                             <div className="text-xs font-semibold">

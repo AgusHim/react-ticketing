@@ -3,8 +3,15 @@ export type Seat = {
     position?: string | null;
     name?: string;
     category: string;
+    gender?: string;
     color: string;
     show_id?: string | null;
+    event_id?: string | null;
+    x?: number;
+    y?: number;
+    rotation?: number;
+    width?: number;
+    height?: number;
 };
 
 export type SeatLocked = {
@@ -24,4 +31,8 @@ export type SeatGenerate = {
     rows: number;
     group: string;
     number_start: number;
+    category?: string;
+    gender?: string;
+    color?: string;
+    margin?: number;
 };

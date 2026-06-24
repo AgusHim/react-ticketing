@@ -20,3 +20,8 @@ export const findTicketsByID = async (search?: string, page?:number, per_page?:n
     );
     return res.data.data as Ticket[];
 };
+
+export const toggleGoodieBag = async (id: string): Promise<Ticket> => {
+    const res = await admin_api.post(`/admin_api/tickets/${id}/goodie-bag`);
+    return res.data.data as Ticket;
+};

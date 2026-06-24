@@ -1,4 +1,3 @@
-// context/BookedSeatsProvider.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import type { Seat, SeatLocked } from '@/types/seat';
 import { toast } from 'sonner';
@@ -9,11 +8,13 @@ import { findSeats } from '@/api/seatApi';
 import { useAuth } from './AuthContext';
 import type { Ticket } from '@/types/ticket';
 import { findTicketsByID } from '@/api/ticket-api';
+import { getAllEvents, type EventModel } from '@/api/event-api';
 
 export const BookedSeatsProvider = ({ children }: { children: React.ReactNode }) => {
     const { user } = useAuth();
+    const [events, setEvents] = useState<EventModel[]>([]);
     const [seats, setSeats] = useState<Seat[]>([]);
-    const [selectedShow, setSelectedShow] = useState<string>("reconnect");
+    const [selectedShow, setSelectedShow] = useState<string>("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [selectedSeats, setSelectedSeats] = useState<BookedSeat[]>([]);
     const authSelectedSeats = selectedSeats.filter((s) => s.admin_id === user?.id);
@@ -23,41 +24,53 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const seatCategories = Array.from(new Set(seats.map(seat => seat.category)));
 
-
-    // Fetch selected seats from backend
+    // Fetch initial events
     useEffect(() => {
-        const fetchSelectedSeats = async () => {
-            const fetchData = async () => {
-                try {
-                    const show = localStorage.getItem("selectedShow");
-                    setSelectedShow(show ?? 'reconnect')
-                    const seats = await findSeats(show ?? 'reconnect');
-                    setSeats(seats);
-                    const bookedSeats = await findBookedSeats(show ?? 'reconnect');
-                    setBookedSeats(bookedSeats);
-                    getSeatsLocked(show ?? 'reconnect').then((res) => {
-
-                        setSelectedSeats(res);
-                    })
-                } catch (err) {
-                    toast.error(`Failed to fetch selected seats: ${err}`);
+        const fetchEvents = async () => {
+            try {
+                const eventsData = await getAllEvents();
+                setEvents(eventsData);
+                
+                let show = localStorage.getItem("selectedShow");
+                if (!show || show === 'reconnect' || show === 'disconnect') {
+                    show = eventsData.length > 0 ? eventsData[0].id : '';
+                    if (show) {
+                        localStorage.setItem("selectedShow", show);
+                        setSelectedShow(show);
+                    }
+                } else if (show && !selectedShow) {
+                    setSelectedShow(show);
                 }
-            };
+            } catch (err) {
+                toast.error(`Failed to fetch events: ${err}`);
+            }
+        };
+        fetchEvents();
+    }, []);
 
-            fetchData();
+    // Fetch selected seats when selectedShow changes
+    useEffect(() => {
+        if (!selectedShow) return;
+        
+        const fetchData = async () => {
+            try {
+                const fetchedSeats = await findSeats(selectedShow);
+                setSeats(fetchedSeats);
+                const fetchedBookedSeats = await findBookedSeats(selectedShow);
+                setBookedSeats(fetchedBookedSeats);
+                const res = await getSeatsLocked(selectedShow);
+                setSelectedSeats(res);
+            } catch (err) {
+                toast.error(`Failed to fetch seats: ${err}`);
+            }
         };
 
-        fetchSelectedSeats();
-    }, [setSelectedSeats, setBookedSeats, selectedShow]);
+        fetchData();
+    }, [selectedShow]);
 
     const toggleSelectShow = async (show: string) => {
         setSelectedShow(show);
         localStorage.setItem("selectedShow", show);
-        const seats = await findBookedSeats();
-        setBookedSeats(seats);
-        getSeatsLocked(selectedShow).then((res) => {
-            setSelectedSeats(res);
-        })
     };
 
     const toggleSelectCategory = async (category: string) => {
@@ -237,6 +250,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
     return (
         <BookedSeatsContext.Provider
             value={{
+                events,
                 seats,
                 selectedSeats,
                 authSelectedSeats,

@@ -17,12 +17,18 @@ export type Seat = {
 export type SeatLocked = {
     seat_id?: string;
     admin_id?: string;
-    show_id?:string;
+    show_id?: string;
+    ticket_id?: string;
+    ticket_code?: string;
+    name?: string;
+    email?: string;
+    ticket_name?: string;
+
 };
 
 export type ResSeatLocked = {
     status: string,
-    data:SeatLocked,
+    data: SeatLocked,
 }
 
 export type SeatGenerate = {

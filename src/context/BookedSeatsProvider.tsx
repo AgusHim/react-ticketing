@@ -30,7 +30,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
             try {
                 const eventsData = await getAllEvents();
                 setEvents(eventsData);
-                
+
                 let show = localStorage.getItem("selectedShow");
                 if (!show || show === 'reconnect' || show === 'disconnect') {
                     show = eventsData.length > 0 ? eventsData[0].id : '';
@@ -51,7 +51,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
     // Fetch selected seats when selectedShow changes
     useEffect(() => {
         if (!selectedShow) return;
-        
+
         const fetchData = async () => {
             try {
                 const fetchedSeats = await findSeats(selectedShow);
@@ -79,7 +79,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
 
     const lockingSeatIdsRef = useRef<Set<string>>(new Set());
 
-    const toggleSeat = async (id: string) => {
+    const toggleSeat = async (id: string, ticket?: Ticket) => {
         // Jika sedang diproses, abaikan klik
         if (lockingSeatIdsRef.current.has(id)) {
             console.warn(`Seat ${id} is still processing, click ignored`);
@@ -92,6 +92,10 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
             seat_id: id,
             admin_id: user?.id,
             show_id: selectedShow,
+            ticket_id: ticket?.id,
+            ticket_code: ticket?.ticket_code,
+            ticket_name: ticket?.name,
+            email: ticket?.email,
         };
 
         try {
@@ -102,7 +106,12 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
                         setSelectedSeats((prev) => {
                             const exists = prev.some((s) => s.seat_id === id);
                             if (!exists) {
-                                return [...prev, data.data];
+                                const newSeatData = { ...data.data } as import('@/types/booked-seat').BookedSeat;
+                                if (ticket) {
+                                    newSeatData.ticket_id = ticket.id;
+                                    newSeatData.name = ticket.name;
+                                }
+                                return [...prev, newSeatData];
                             }
                             return prev; // Tidak ubah apa-apa jika sudah ada
                         });
@@ -126,7 +135,12 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
 
     const claimBookingSeats = async () => {
         try {
-            const res = await upsertSeats(authSelectedSeats);
+            const dataToUpsert = authSelectedSeats.map((seat: any) => ({
+                ...seat,
+                event_id: seat.event_id || seat.show_id
+            })) as import('@/types/booked-seat').BookedSeat[];
+
+            const res = await upsertSeats(dataToUpsert);
             toast.success('Successfully booking seats');
             res.forEach((seat) => {
                 upsertSeatFromBookedSeat(seat);
@@ -198,7 +212,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
     }
 
     const upsertSelectedSeats = (type: string, seat: BookedSeat) => {
-        if (seat.show_id === selectedShow) {
+        if (seat.event_id === selectedShow) {
             if (type === "seat_locked") {
                 setSelectedSeats((prev) => {
                     const exists = prev.some((s) => s.seat_id === seat.seat_id);
@@ -234,7 +248,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
                 const updated = [...prev]
                 updated[index] = {
                     id: `${selectedShow}-${seat.id}`,
-                    show_id: selectedShow,
+                    event_id: selectedShow,
                     seat_id: seat.id,
                     admin_id: user?.id,
                     name: ticket.name,

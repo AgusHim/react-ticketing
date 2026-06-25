@@ -5,7 +5,7 @@ export type BookedSeat = {
     id?: string;
     seat_id?: string;
     seat?: Seat | null;
-    show_id?: string;
+    event_id?: string;
     admin_id?: string;
     name?: string;
     ticket_id?: string;
@@ -15,5 +15,5 @@ export type BookedSeat = {
 
 export type ResDeleteBookedSeat = {
     success: boolean;
-    message:string;
+    message: string;
 }

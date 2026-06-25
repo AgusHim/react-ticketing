@@ -389,10 +389,11 @@ export default function BookingPage() {
         let failCount = 0;
         for (const pair of allLockedPairs) {
             try {
-                await confirmSeatBooking(eventId, pair.seatId, pair.session.ticket_id, pair.session.name || "Peserta");
+                const confirmedSeat = await confirmSeatBooking(eventId, pair.seatId, pair.session.ticket_id, pair.session.name || "Peserta");
                 successCount++;
                 // Optimistic UI update per pair
                 setBookedSeatIds(prev => [...prev, pair.seatId]);
+                setBookedSeatsData(prev => [...prev, { seat_id: pair.seatId, ticket_id: pair.session.ticket_id, event_id: eventId, name: pair.session.name } as BookedSeat]);
                 setLockedSeats(prev => prev.filter(s => s.seat_id !== pair.seatId));
                 setTicketCountdowns(prev => ({ ...prev, [pair.session.ticket_id]: 0 }));
             } catch (err: any) {

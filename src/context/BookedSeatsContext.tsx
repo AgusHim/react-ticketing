@@ -17,7 +17,7 @@ export type BookedSeatsContextType = {
     setTickets: React.Dispatch<React.SetStateAction<Ticket[]>>;
     selectedShow: string;
     claimBookingSeats: () => void;
-    toggleSeat: (id: string, seat: Seat) => void;
+    toggleSeat: (id: string, ticket?: Ticket) => void;
     toggleSelectShow: (show: string) => void;
     upsertSeatFromBookedSeat: (seat: BookedSeat) => void;
     upsertSelectedSeats: (type: string, seat: SeatLocked) => void;

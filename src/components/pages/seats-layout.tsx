@@ -9,9 +9,9 @@ export default function SeatsLayoutPage() {
     return (
         <SeatsProvider>
             {/* Header / Topbar could go here, but we'll use the main layout */}
-            <div className="flex h-screen bg-slate-950 overflow-hidden text-slate-200">
+            <div className="flex h-screen overflow-hidden text-neutral-200" style={{ background: '#0a0a0a' }}>
                 {/* Left Sidebar - Creation Tools (300px) */}
-                <div className="w-[300px] shrink-0 z-10 shadow-xl flex flex-col">
+                <div className="w-[300px] shrink-0 z-10 flex flex-col border-r border-white/[0.06]" style={{ background: '#0d0d0d' }}>
                     <SeatCreationTools />
                 </div>
                 
@@ -31,7 +31,7 @@ export default function SeatsLayoutPage() {
                 </div>
 
                 {/* Right Sidebar - Properties Panel (300px) */}
-                <div className="w-[300px] shrink-0 z-10 shadow-xl">
+                <div className="w-[300px] shrink-0 z-10 border-l border-white/[0.06]" style={{ background: '#0d0d0d' }}>
                     <SeatPropertiesPanel />
                 </div>
             </div>

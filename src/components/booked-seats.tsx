@@ -2,15 +2,17 @@ import { useBookedSeats } from "@/context/BookedSeatsContext";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { FormBookedSeatDialog } from "./dialog/form-booked-seat-dialog";
 import { useState, useMemo } from "react";
-import { useSidebar } from "./ui/sidebar";
+
+import type { Ticket } from "@/types/ticket";
 
 interface BookedSeatsProps {
   rows: number; // kept for compatibility but ignored for rendering
   cols: number; // kept for compatibility but ignored for rendering
   seatSize?: number;
+  activeTicket?: Ticket | null;
 }
 
-export const BookedSeats: React.FC<BookedSeatsProps> = ({ }) => {
+export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
   const {
     seats,
     authSelectedSeats,
@@ -22,7 +24,6 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ }) => {
   } = useBookedSeats();
 
   const [openDialog, setOpenDialog] = useState(false);
-  const { open } = useSidebar();
 
   const layoutBounds = useMemo(() => {
     if (!seats.length) return { minX: 0, maxX: 1000, minY: 0, maxY: 1000, width: 1000, height: 1000 };
@@ -68,8 +69,8 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ }) => {
 
   return (
     <div
-      className={`${open ? "w-[83vw]" : "w-[99vw]"
-        } h-[80vh] relative overflow-hidden bg-slate-900 rounded-xl`}
+      className={`w-full h-full relative overflow-hidden rounded-xl`}
+      style={{ background: '#0a0a0a' }}
     >
       <TransformWrapper
         key={`transform-${layoutBounds.width}-${initialScale}`}
@@ -99,8 +100,17 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ }) => {
 
               const status = isBooked ? 'booked' : isLocked ? 'locked' : isSelectedSeat ? 'mine' : 'available';
 
-              const isAllowed = selectedCategory === "all" || seatData.category === selectedCategory || isStage;
-              const isClickable = !isStage && isAllowed && (status === 'available' || status === 'mine' || status === 'booked');
+              const isGenderAllowed = !activeTicket || !seatData.gender || seatData.gender === 'both' || (activeTicket.gender && activeTicket.gender.toLowerCase() === seatData.gender.toLowerCase());
+              const isCatAllowed = !activeTicket || !activeTicket.category || activeTicket.category.toLowerCase() === seatData.category?.toLowerCase() || isStage;
+
+              const isAllowed = (selectedCategory === "all" || seatData.category === selectedCategory || isStage) && isGenderAllowed && isCatAllowed;
+
+              // Only allow locking an available seat if there is an active ticket
+              const isClickable = !isStage && isAllowed && (
+                status === 'booked' ||
+                status === 'mine' ||
+                (status === 'available' && !!activeTicket)
+              );
 
               const color = isStage ? (seatData.color || '#1e293b') : (status === 'mine' ? '#4ade80' : status === 'locked' ? '#eab308' : status === 'booked' ? '#64748b' : (seatData.color || '#3b82f6'));
 
@@ -135,23 +145,40 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ }) => {
                     border: status === 'mine' ? '2px solid #4ade80' : '1px solid rgba(255,255,255,0.1)',
                     borderRadius: isStage ? '8px' : '4px',
                     boxSizing: 'border-box',
-                    cursor: isClickable ? 'pointer' : (isStage ? 'default' : 'not-allowed'),
+                    cursor: isClickable ? 'pointer' : (isStage || status === 'booked' || status === 'mine' ? 'not-allowed' : 'pointer'), // Show pointer to allow clicking and showing toast
                     opacity: status === 'booked' ? 0.7 : (!isAllowed ? 0.2 : 1),
                     transition: 'all 0.2s ease',
                     transform: `rotate(${rotation}deg)`,
                     transformOrigin: 'top left',
                   }}
                   onClick={
-                    isClickable
-                      ? () => {
-                        if (status === 'booked' && bookedData) {
-                          setBookedSeat(bookedData);
-                          setOpenDialog(true);
-                        } else if (status === 'available' || status === 'mine') {
-                          toggleSeat(seatData.id!, seatData);
+                    () => {
+                      if (isStage) return;
+                      if (status === 'booked' && bookedData) {
+                        setBookedSeat(bookedData);
+                        setOpenDialog(true);
+                      } else if (status === 'mine') {
+                        toggleSeat(seatData.id!, activeTicket || undefined);
+                      } else if (status === 'available') {
+                        if (!activeTicket) {
+                          import('sonner').then(m => m.toast.error("Pilih tiket terlebih dahulu sebelum mengunci kursi!"));
+                          return;
                         }
+                        
+                        // Check if the active ticket already has an assigned seat
+                        const isTicketAssigned = authSelectedSeats.some((s: any) => s.ticket_id === activeTicket.id);
+                        if (isTicketAssigned) {
+                          import('sonner').then(m => m.toast.error("Tiket ini sudah memiliki kursi. Batalkan kursi sebelumnya untuk memindahkannya."));
+                          return;
+                        }
+
+                        if (!isAllowed) {
+                          import('sonner').then(m => m.toast.error("Kursi ini tidak sesuai dengan kategori/gender tiket."));
+                          return;
+                        }
+                        toggleSeat(seatData.id!, activeTicket || undefined);
                       }
-                      : undefined
+                    }
                   }
                 >
                   <div className="flex flex-col items-center justify-center h-full text-center">
@@ -162,7 +189,7 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ }) => {
                         <p className="text-[12px] font-bold text-white">
                           {status === 'booked' ? '✕' : status === 'locked' ? '🔒' : seatData.name}
                         </p>
-                        {status === 'booked' && <p className="text-[8px] text-white/80 font-bold">{seatData.name}</p>}
+                        {status === 'booked' ? <p className="text-[12px] text-white font-bold">{seatData.name}</p> : <p className="text-[8px] text-white/80 font-bold">{seatData.category}</p>}
                         {seatData.gender && seatData.gender !== 'both' && (
                           <div className={`absolute top-0 right-0 w-3 h-3 rounded-bl-sm flex items-center justify-center text-[7px] font-bold ${seatData.gender === 'male' ? 'bg-blue-500 text-white' : 'bg-pink-500 text-white'
                             }`}>

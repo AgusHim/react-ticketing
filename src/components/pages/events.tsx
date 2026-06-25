@@ -37,6 +37,8 @@ export default function EventsPage() {
     status: 'active',
     date: '',
     war_start_date: '',
+    image_url: '',
+    color: '#e50914',
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -74,6 +76,8 @@ export default function EventsPage() {
       status: 'active',
       date: '',
       war_start_date: '',
+      image_url: '',
+      color: '#e50914',
     });
     setIsDialogOpen(true);
   };
@@ -87,6 +91,8 @@ export default function EventsPage() {
       status: evt.status,
       date: evt.date ? new Date(evt.date).toISOString().slice(0, 16) : '',
       war_start_date: evt.war_start_date ? new Date(evt.war_start_date).toISOString().slice(0, 16) : '',
+      image_url: evt.image_url || '',
+      color: evt.color || '#e50914',
     });
     setIsDialogOpen(true);
   };
@@ -190,6 +196,39 @@ export default function EventsPage() {
                   onChange={handleInputChange}
                   placeholder="Contoh: Stadion Utama GBK"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="image_url">URL Banner Event</Label>
+                  <Input
+                    id="image_url"
+                    name="image_url"
+                    value={formData.image_url}
+                    onChange={handleInputChange}
+                    placeholder="https://example.com/banner.jpg"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="color">Warna Tema</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="color"
+                      name="color"
+                      type="color"
+                      className="w-12 h-10 p-1 cursor-pointer"
+                      value={formData.color}
+                      onChange={handleInputChange}
+                    />
+                    <Input
+                      type="text"
+                      value={formData.color}
+                      onChange={(e) => setFormData(prev => ({...prev, color: e.target.value}))}
+                      placeholder="#e50914"
+                      className="flex-1 font-mono uppercase"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

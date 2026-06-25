@@ -19,7 +19,7 @@ interface LockedSeat {
     event_id: string;
 }
 
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import type { EventModel } from '@/api/event-api';
 
 interface TicketSession {
@@ -34,7 +34,18 @@ interface TicketSession {
 
 export default function BookingPage() {
     const [searchParams] = useSearchParams();
-    const eventId = searchParams.get('event_id') || 'default';
+    const { slug } = useParams<{ slug: string }>();
+    const navigate = useNavigate();
+    
+    const eventIdOrSlug = slug || searchParams.get('event_id');
+    
+    useEffect(() => {
+        if (!eventIdOrSlug) {
+            navigate('/');
+        }
+    }, [eventIdOrSlug, navigate]);
+
+    const eventId = eventIdOrSlug || 'default';
     const [eventData, setEventData] = useState<EventModel | null>(null);
     const [seats, setSeats] = useState<Seat[]>([]);
     const [lockedSeats, setLockedSeats] = useState<LockedSeat[]>([]);

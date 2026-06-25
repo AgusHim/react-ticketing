@@ -25,6 +25,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/verify-ticket" element={<VerifyTicketPage />} />
             <Route path="/booking" element={<BookingPage />} />
+            <Route path="/booking/:slug" element={<BookingPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/events" element={<EventsPage />} />

@@ -49,7 +49,7 @@ export function TableTickets() {
                         <TableHead className="w-40">Name</TableHead>
                         <TableHead className="w-10">Gender</TableHead>
                         <TableHead className="w-20">Email</TableHead>
-                        <TableHead className="w-20">Show</TableHead>
+                        <TableHead className="w-20">Event</TableHead>
                         <TableHead className="w-32">Goodie Bag</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -62,7 +62,7 @@ export function TableTickets() {
                             <TableCell>{ticket.name}</TableCell>
                             <TableCell>{ticket.gender}</TableCell>
                             <TableCell>{ticket.email}</TableCell>
-                            <TableCell>{ticket.show_id}</TableCell>
+                            <TableCell>{ticket.event?.name ?? ''}</TableCell>
                             <TableCell>
                                 <button
                                     className={`px-3 py-1 text-xs font-semibold rounded-full border transition-colors ${ticket.goodie_bag_claimed ? 'bg-green-100 text-green-700 border-green-300' : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'}`}

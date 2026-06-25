@@ -1,3 +1,4 @@
+import type { Event } from "./event";
 import type { BookedSeat } from "./booked-seat";
 
 export type Ticket = {
@@ -11,6 +12,7 @@ export type Ticket = {
     ticket_name?: string;
     show_id?: string;
     event_id?: string;
+    event?: Event | null;
     booked_seat?: BookedSeat | null;
     goodie_bag_claimed?: boolean;
     category?: string;

@@ -578,6 +578,15 @@ export default function BookingPage() {
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             const key = `war_kursi_tokens_${eventId}`;
+                                            
+                                            // Unlock seat if it was locked
+                                            const lockedSeat = lockedSeats.find(s => s.admin_id === t.ticket_id);
+                                            if (lockedSeat) {
+                                                lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.ticket_id).catch(() => {});
+                                                setLockedSeats(prev => prev.filter(s => s.seat_id !== lockedSeat.seat_id));
+                                                setTicketCountdowns(prev => ({ ...prev, [t.ticket_id]: 0 }));
+                                            }
+
                                             const newSessions = ticketSessions.filter(ts => ts.ticket_id !== t.ticket_id);
                                             setTicketSessions(newSessions);
                                             localStorage.setItem(key, JSON.stringify(newSessions.map(ts => ts.token)));

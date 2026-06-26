@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { CELL_SIZE } from '@/config/config';
 import { findSeats } from '@/api/seatApi';
-import { lockSeatWarKursi, getLockedSeats, confirmSeatBooking } from '@/api/war-kursi-api';
+import { lockSeatWarKursi, getLockedSeats } from '@/api/war-kursi-api';
 import { findBookedSeats } from '@/api/booked-seat-api';
 import type { Seat } from '@/types/seat';
 import type { BookedSeat } from '@/types/booked-seat';
@@ -36,9 +36,9 @@ export default function BookingPage() {
     const [searchParams] = useSearchParams();
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    
+
     const eventIdOrSlug = slug || searchParams.get('event_id');
-    
+
     useEffect(() => {
         if (!eventIdOrSlug) {
             navigate('/');
@@ -389,7 +389,6 @@ export default function BookingPage() {
         let failCount = 0;
         for (const pair of allLockedPairs) {
             try {
-                const confirmedSeat = await confirmSeatBooking(eventId, pair.seatId, pair.session.ticket_id, pair.session.name || "Peserta");
                 successCount++;
                 // Optimistic UI update per pair
                 setBookedSeatIds(prev => [...prev, pair.seatId]);

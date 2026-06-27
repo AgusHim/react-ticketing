@@ -73,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/">
-                <span className="text-base font-semibold">ITTIBA EVENT</span>
+                <span className="text-base font-semibold">YN SOLO EVENT</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -83,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={{"name":user?.name??'',email:user?.email??'', avatar:""}} />
+        <NavUser user={{ "name": user?.name ?? '', email: user?.email ?? '', avatar: "" }} />
       </SidebarFooter>
     </Sidebar>
   )

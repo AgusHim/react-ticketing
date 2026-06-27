@@ -936,7 +936,7 @@ export default function BookingPage() {
                     <div className="absolute inset-0 z-50 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}>
                         <div className="text-center p-6 md:p-10 rounded-3xl max-w-md w-full" style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
                             <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-5">
-                                <IconTicket className="h-7 w-7 text-red-500" />
+                                <IconArmchair className="h-7 w-7 text-red-500" />
                             </div>
                             <h2 className="text-xl md:text-2xl font-bold text-white mb-2">War Kursi Belum Dimulai</h2>
                             <p className="text-sm text-neutral-500 mb-6 md:mb-8">Persiapkan e-tiketmu. Silahkan download <a href="https://darisini.com/orders" target="_blank" rel="noopener noreferrer" className="text-emerald-400 underline hover:text-emerald-500">darisini</a>.</p>

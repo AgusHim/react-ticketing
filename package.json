@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test:integration": "playwright test",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@playwright/test": "^1.53.1",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

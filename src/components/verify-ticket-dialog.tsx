@@ -101,6 +101,7 @@ export function VerifyTicketDialog({ eventId, onVerified, children }: { eventId:
                 <div className="flex flex-col gap-4 py-4">
                     <input
                         ref={fileInputRef}
+                        data-testid="ticket-pdf-input"
                         type="file"
                         accept=".pdf,application/pdf"
                         className="hidden"
@@ -110,6 +111,7 @@ export function VerifyTicketDialog({ eventId, onVerified, children }: { eventId:
                     {!isParsing ? (
                         <>
                             <div
+                                data-testid="ticket-pdf-dropzone"
                                 onDragOver={handleDragOver}
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}

@@ -54,11 +54,12 @@ export const verifyTicketPDF = async (file: File): Promise<VerifyResult[]> => {
 
 
 // Public: Lock/unlock a seat during war kursi
-export const lockSeatWarKursi = async (eventId: string, seatId: string, userId: string) => {
+export const lockSeatWarKursi = async (eventId: string, seatId: string, userId: string, action?: 'lock' | 'unlock') => {
   const res = await axiosInstance.post('/api/seats/lock', {
     show_id: eventId,
     seat_id: seatId,
     admin_id: userId,
+    action: action,
   });
   return res.data;
 };

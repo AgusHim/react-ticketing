@@ -241,6 +241,11 @@ export default function BookingPage() {
         return () => { socket?.close(); ws.current = null; };
     }, [activeTicketId, handleMessage]);
 
+    const lockedSeatsRef = useRef(lockedSeats);
+    useEffect(() => {
+        lockedSeatsRef.current = lockedSeats;
+    }, [lockedSeats]);
+
     useEffect(() => {
         const timer = setInterval(() => {
             setTicketCountdowns(prev => {
@@ -250,13 +255,19 @@ export default function BookingPage() {
                     if (count > 0) {
                         next[id] = count - 1;
                         changed = true;
+                        if (next[id] === 0) {
+                            const locked = lockedSeatsRef.current.find(s => s.admin_id === id);
+                            if (locked && locked.seat_id) {
+                                lockSeatWarKursi(eventId, locked.seat_id, id, 'unlock').catch(() => {});
+                            }
+                        }
                     }
                 }
                 return changed ? next : prev;
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, [eventId]);
 
     const handleAddTickets = (newTickets: any[]) => {
         const key = `war_kursi_tokens_${eventId}`;
@@ -544,7 +555,7 @@ export default function BookingPage() {
                 </div>
 
                 {hasBookedSeats && (
-                    <button onClick={() => setShowInvoice(true)} className="mb-4 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl transition-all font-semibold text-xs w-full shadow-lg shadow-emerald-500/20 active:scale-[0.97]">
+                    <button data-testid="desktop-invoice-button" onClick={() => setShowInvoice(true)} className="mb-4 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl transition-all font-semibold text-xs w-full shadow-lg shadow-emerald-500/20 active:scale-[0.97]">
                         <IconReceipt className="h-4 w-4" />
                         <span>Lihat Invoice</span>
                     </button>
@@ -573,6 +584,7 @@ export default function BookingPage() {
 
                             return (
                                 <div key={t.ticket_id}
+                                    data-testid={`ticket-session-${t.ticket_id}`}
                                     onClick={() => setActiveTicketId(t.ticket_id)}
                                     className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98] ${isSelected
                                         ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
@@ -815,7 +827,7 @@ export default function BookingPage() {
                             })}
                             <div className="flex gap-2 pt-2 sticky bottom-0" style={{ background: '#141414' }}>
                                 <button onClick={() => setShowConfirmDialog(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-all active:scale-[0.97] border border-white/[0.06]">Batal</button>
-                                <button onClick={handleConfirmBooking} disabled={isLocking || allLockedPairs.length === 0} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <button data-testid="confirm-booking-submit" onClick={handleConfirmBooking} disabled={isLocking || allLockedPairs.length === 0} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                     {isLocking ? (<><IconLoader2 className="h-4 w-4 animate-spin" /> Memproses...</>) : (<><IconCheck className="h-4 w-4" /> Konfirmasi {allLockedPairs.length > 1 ? `(${allLockedPairs.length})` : 'Kursi'}</>)}
                                 </button>
                             </div>
@@ -923,7 +935,7 @@ export default function BookingPage() {
                             {/* Bottom action */}
                             <div className="px-4 pb-6 pt-2 flex gap-2">
                                 <button onClick={() => setShowConfirmDialog(false)} className="flex-1 py-3 rounded-xl text-sm font-medium text-neutral-400 bg-white/[0.04] active:scale-[0.97] border border-white/[0.06] transition-all">Batal</button>
-                                <button onClick={handleConfirmBooking} disabled={isLocking || allLockedPairs.length === 0} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-emerald-600 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
+                                <button data-testid="confirm-booking-submit" onClick={handleConfirmBooking} disabled={isLocking || allLockedPairs.length === 0} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-emerald-600 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
                                     {isLocking ? (<><IconLoader2 className="h-4 w-4 animate-spin" /> Memproses...</>) : (<><IconCheck className="h-4 w-4" /> Konfirmasi {allLockedPairs.length > 1 ? `(${allLockedPairs.length})` : ''}</>)}
                                 </button>
                             </div>
@@ -1029,6 +1041,8 @@ export default function BookingPage() {
                                         return (
                                             <div
                                                 key={seatData.id}
+                                                data-testid={`seat-${seatData.id}`}
+                                                data-seat-status={status}
                                                 style={{
                                                     position: 'absolute',
                                                     top: y,
@@ -1091,7 +1105,7 @@ export default function BookingPage() {
                                 (lockedSeatItem ? seats.find(s => s.id === lockedSeatItem.seat_id)?.name : null);
 
                             return (
-                                <div key={t.ticket_id} onClick={() => setActiveTicketId(t.ticket_id)} className={`shrink-0 flex items-center h-14 rounded-xl border pl-3 pr-2 gap-3 cursor-pointer transition-all ${isActive ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]'}`}>
+                                <div key={t.ticket_id} data-testid={`ticket-session-${t.ticket_id}`} onClick={() => setActiveTicketId(t.ticket_id)} className={`shrink-0 flex items-center h-14 rounded-xl border pl-3 pr-2 gap-3 cursor-pointer transition-all ${isActive ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]'}`}>
                                     <div className="flex flex-col justify-center min-w-[100px] max-w-[140px]">
                                         <p className={`text-[13px] font-semibold truncate ${isActive ? 'text-emerald-400' : 'text-neutral-200'}`}>{t.ticket_code || t.ticket_id}</p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
@@ -1126,7 +1140,7 @@ export default function BookingPage() {
 
                     <div className="px-4 py-2.5 border-t border-white/[0.06] flex flex-col gap-2.5 bg-white/[0.02]">
                         <VerifyTicketDialog eventId={eventId} onVerified={handleAddTickets}>
-                            <button className="flex w-full items-center justify-center gap-2 h-11 rounded-xl border border-dashed border-white/20 hover:border-white/40 bg-white/[0.03] hover:bg-white/[0.06] transition-all text-neutral-400 hover:text-white">
+                            <button data-testid="mobile-add-ticket-button" className="flex w-full items-center justify-center gap-2 h-11 rounded-xl border border-dashed border-white/20 hover:border-white/40 bg-white/[0.03] hover:bg-white/[0.06] transition-all text-neutral-400 hover:text-white">
                                 <IconPlus className="h-4 w-4" />
                                 <span className="text-sm font-semibold">Tambah Tiket</span>
                             </button>
@@ -1138,12 +1152,12 @@ export default function BookingPage() {
                                     <span className="text-emerald-400 text-sm font-medium">⏱ <strong className="font-mono">{formatTime(maxLockedCountdown)}</strong></span>
                                     <span className="text-[12px] text-neutral-400"><strong className="text-white">{allLockedPairs.length}</strong> kursi</span>
                                 </div>
-                                <button className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20" onClick={() => setShowConfirmDialog(true)}>
+                                <button data-testid="mobile-confirm-button" className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20" onClick={() => setShowConfirmDialog(true)}>
                                     <IconCheck className="h-4 w-4" /> Konfirmasi
                                 </button>
                             </div>
                         ) : hasBookedSeats ? (
-                            <button onClick={() => setShowInvoice(true)} className="mt-0.5 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 w-full py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20">
+                            <button data-testid="mobile-invoice-button" onClick={() => setShowInvoice(true)} className="mt-0.5 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 w-full py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20">
                                 <IconReceipt className="h-4 w-4" /> Lihat E-Invoice
                             </button>
                         ) : null}

@@ -2,13 +2,13 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { CELL_SIZE } from '@/config/config';
 import { findSeats } from '@/api/seatApi';
-import { lockSeatWarKursi, getLockedSeats } from '@/api/war-kursi-api';
+import { lockSeatWarKursi, getLockedSeats, confirmSeatBooking } from '@/api/war-kursi-api';
 import { findBookedSeats } from '@/api/booked-seat-api';
 import type { Seat } from '@/types/seat';
 import type { BookedSeat } from '@/types/booked-seat';
 import type { SocketMessage } from '@/types/socket-message';
 import { toast } from 'sonner';
-import { IconArrowLeft, IconCheck, IconLoader2, IconTicket, IconCalendarEvent, IconMapPin, IconX, IconBrandWhatsapp, IconBrandYoutube, IconInfoCircle, IconPlus, IconArmchair, IconListDetails } from '@tabler/icons-react';
+import { IconArrowLeft, IconCheck, IconLoader2, IconTicket, IconCalendarEvent, IconMapPin, IconX, IconBrandWhatsapp, IconBrandYoutube, IconInfoCircle, IconPlus, IconArmchair, IconListDetails, IconReceipt } from '@tabler/icons-react';
 import { VerifyTicketDialog } from '@/components/verify-ticket-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
@@ -68,6 +68,12 @@ export default function BookingPage() {
     // Confirm booking dialog
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
+    const [showInvoice, setShowInvoice] = useState(false);
+
+    const bookedTicketsInSession = useMemo(() => {
+        return ticketSessions.filter(t => bookedSeatsData.some(b => b.ticket_id === t.ticket_id));
+    }, [ticketSessions, bookedSeatsData]);
+    const hasBookedSeats = bookedTicketsInSession.length > 0;
 
     // Read tokens from localStorage
     useEffect(() => {
@@ -389,6 +395,7 @@ export default function BookingPage() {
         let failCount = 0;
         for (const pair of allLockedPairs) {
             try {
+                await confirmSeatBooking(eventId, pair.seatId, pair.session.ticket_id, pair.session.name);
                 successCount++;
                 // Optimistic UI update per pair
                 setBookedSeatIds(prev => [...prev, pair.seatId]);
@@ -535,6 +542,13 @@ export default function BookingPage() {
                         </DialogContent>
                     </Dialog>
                 </div>
+
+                {hasBookedSeats && (
+                    <button onClick={() => setShowInvoice(true)} className="mb-4 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl transition-all font-semibold text-xs w-full shadow-lg shadow-emerald-500/20 active:scale-[0.97]">
+                        <IconReceipt className="h-4 w-4" />
+                        <span>Lihat Invoice</span>
+                    </button>
+                )}
 
                 {/* Ticket Sessions */}
                 <div className="border-t border-white/5 pt-4">
@@ -809,6 +823,58 @@ export default function BookingPage() {
                     </DialogContent>
                 </Dialog>
 
+                {/* ═══════════════ E-INVOICE DIALOG ═══════════════ */}
+                <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
+                    <DialogContent className="sm:max-w-md bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-white text-base">Invoice Booking</DialogTitle>
+                            <DialogDescription className="text-neutral-500 text-sm">
+                                Tunjukkan halaman ini kepada panitia saat penukaran goodiebag dan gelang kursi.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="mt-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-4">
+                            {/* Event Info */}
+                            <div className="text-center pb-4 border-b border-white/[0.08]">
+                                <h3 className="text-lg font-bold text-emerald-400">{eventData?.name}</h3>
+                                <p className="text-xs text-neutral-400 mt-1">
+                                    {eventData ? new Date(eventData.date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
+                                </p>
+                                <p className="text-xs text-neutral-400 mt-1">{eventData?.location || '-'}</p>
+                            </div>
+
+                            {/* Tickets List */}
+                            <div className="space-y-3">
+                                {bookedTicketsInSession.map((t) => {
+                                    const bookedSeatItem = bookedSeatsData.find(b => b.ticket_id === t.ticket_id);
+                                    const seatName = bookedSeatItem?.seat?.name || seats.find(s => s.id === bookedSeatItem?.seat_id)?.name;
+                                    return (
+                                        <div key={t.ticket_id} className="flex flex-col gap-1.5 p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="text-sm font-semibold text-white">{t.name}</p>
+                                                    <p className="text-[10px] text-neutral-500 font-mono mt-0.5">{t.ticket_code || t.ticket_id}</p>
+                                                </div>
+                                                <div className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md text-xs font-bold border border-emerald-500/30">
+                                                    Kursi: {seatName || '-'}
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 mt-1">
+                                                {t.gender && <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-neutral-300 uppercase">{t.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</span>}
+                                                {t.category && <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-neutral-300 uppercase">{t.category}</span>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="pt-2 text-center">
+                                <p className="text-[10px] text-neutral-500 italic">Terima kasih telah melakukan pemesanan kursi.</p>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
                 {/* ═══════════════ CONFIRM BOOKING — Mobile Bottom Drawer ═══════════════ */}
                 <Drawer open={showConfirmDialog && typeof window !== 'undefined' && window.innerWidth < 768} onOpenChange={setShowConfirmDialog}>
                     <DrawerContent className="bg-[#141414] border-t-white/[0.08] text-white max-h-[85vh]">
@@ -1066,7 +1132,7 @@ export default function BookingPage() {
                             </button>
                         </VerifyTicketDialog>
 
-                        {allLockedPairs.length > 0 && (
+                        {allLockedPairs.length > 0 ? (
                             <div className="flex items-center justify-between pt-0.5">
                                 <div className="flex items-center gap-2">
                                     <span className="text-emerald-400 text-sm font-medium">⏱ <strong className="font-mono">{formatTime(maxLockedCountdown)}</strong></span>
@@ -1076,7 +1142,11 @@ export default function BookingPage() {
                                     <IconCheck className="h-4 w-4" /> Konfirmasi
                                 </button>
                             </div>
-                        )}
+                        ) : hasBookedSeats ? (
+                            <button onClick={() => setShowInvoice(true)} className="mt-0.5 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 w-full py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20">
+                                <IconReceipt className="h-4 w-4" /> Lihat E-Invoice
+                            </button>
+                        ) : null}
                     </div>
                 </div>
             </div>

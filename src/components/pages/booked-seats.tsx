@@ -320,9 +320,10 @@ function BookedSeatsPageInner() {
                                 >
                                     <div className="flex flex-col justify-center min-w-[100px] max-w-[140px]">
                                         <p className={`text-xs font-semibold truncate ${isActive ? 'text-emerald-400' : 'text-neutral-200'}`}>{ticket.ticket_code || ticket.ticket_id}</p>
+                                        <span className="text-[9px] text-white truncate max-w-[80px] gap-1.5 mt-0.5">{ticket.name}</span>
                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                            <span className="text-[9px] text-neutral-500 truncate max-w-[80px]">{ticket.name}</span>
                                             {ticket.gender && <span className={`text-[8px] px-1 rounded uppercase font-bold ${ticket.gender.toLowerCase() === 'male' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400'}`}>{ticket.gender}</span>}
+                                            {ticket.category && <span className={`text-[8px] px-1 rounded uppercase font-bold ${ticket.category.toLowerCase() === 'platinum' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-pink-500/20 text-pink-400'}`}>{ticket.category}</span>}
                                         </div>
                                     </div>
 

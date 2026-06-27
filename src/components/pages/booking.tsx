@@ -8,9 +8,10 @@ import type { Seat } from '@/types/seat';
 import type { BookedSeat } from '@/types/booked-seat';
 import type { SocketMessage } from '@/types/socket-message';
 import { toast } from 'sonner';
-import { IconArrowLeft, IconCheck, IconLoader2, IconTicket, IconCalendarEvent, IconMapPin, IconX, IconBrandWhatsapp, IconBrandYoutube, IconChevronUp, IconChevronDown, IconInfoCircle, IconArmchair } from '@tabler/icons-react';
+import { IconArrowLeft, IconCheck, IconLoader2, IconTicket, IconCalendarEvent, IconMapPin, IconX, IconBrandWhatsapp, IconBrandYoutube, IconInfoCircle, IconPlus, IconArmchair, IconListDetails } from '@tabler/icons-react';
 import { VerifyTicketDialog } from '@/components/verify-ticket-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 
 interface LockedSeat {
     id: string;
@@ -63,8 +64,7 @@ export default function BookingPage() {
     const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
     const [ticketCountdowns, setTicketCountdowns] = useState<Record<string, number>>({});
 
-    // Mobile bottom sheet state
-    const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+
     // Confirm booking dialog
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
@@ -417,8 +417,39 @@ export default function BookingPage() {
         return max;
     }, [allLockedPairs, ticketCountdowns]);
 
-    const activeCountdown = ticketId ? (ticketCountdowns[ticketId] || 0) : 0;
     const showCountdownBar = allLockedPairs.length > 0 && maxLockedCountdown > 0;
+
+    const tutorialDialogContent = (
+        <>
+            <DialogHeader>
+                <DialogTitle className="text-white text-base">Tutorial Booking Seat</DialogTitle>
+                <DialogDescription className="text-neutral-500 text-sm">
+                    Tonton video panduan atau ikuti langkah-langkah di bawah ini.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="aspect-video mt-3 rounded-xl overflow-hidden bg-black shrink-0">
+                <iframe
+                    width="100%"
+                    height="100%"
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                ></iframe>
+            </div>
+            <div className="mt-4 space-y-3 pb-2">
+                <h3 className="text-sm font-semibold text-white">Langkah-langkah:</h3>
+                <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-2">
+                    <li>Siapkan file e-ticket (PDF) yang sudah Anda download dari <a href="https://www.darisini.com/orders" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">darisini.com</a></li>
+                    <li>Klik tombol <strong className="text-neutral-200">Tambah Tiket</strong> di bagian bawah layar.</li>
+                    <li>Upload file PDF tiket Anda ke dalam sesi.</li>
+                    <li>Pilih tiket Anda, lalu klik kursi kosong (bewarna terang) di peta.</li>
+                    <li>Jika sudah selesai memilih kursi, klik <strong className="text-emerald-400">Konfirmasi</strong>.</li>
+                </ol>
+            </div>
+        </>
+    );
 
     // ─── Sidebar Content (shared between desktop sidebar and mobile bottom sheet) ───
     const sidebarContent = (
@@ -486,7 +517,7 @@ export default function BookingPage() {
 
                 {/* Quick Actions - horizontal on mobile */}
                 <div className="grid grid-cols-2 gap-2 mb-4">
-                    <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer"
+                    <a href="https://wa.me/6288227301613" target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] py-2.5 rounded-xl transition-all duration-200 font-medium text-xs active:scale-[0.97]">
                         <IconBrandWhatsapp className="h-4 w-4" />
                         <span>Support</span>
@@ -499,24 +530,8 @@ export default function BookingPage() {
                                 <span>Tutorial</span>
                             </button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-3xl bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl">
-                            <DialogHeader>
-                                <DialogTitle className="text-white text-base">Tutorial Cara Booking</DialogTitle>
-                                <DialogDescription className="text-neutral-500 text-sm">
-                                    Tonton video panduan pemesanan tiket.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="aspect-video mt-3 rounded-xl overflow-hidden bg-black">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                                    title="YouTube video player"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                ></iframe>
-                            </div>
+                        <DialogContent className="sm:max-w-3xl bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl max-h-[85vh] overflow-y-auto">
+                            {tutorialDialogContent}
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -546,43 +561,38 @@ export default function BookingPage() {
                                 <div key={t.ticket_id}
                                     onClick={() => setActiveTicketId(t.ticket_id)}
                                     className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98] ${isSelected
-                                        ? 'bg-white/[0.07] border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.03)]'
-                                        : 'bg-white/[0.02] border-white/[0.05] hover:bg-white/[0.05] hover:border-white/10'
+                                        ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                                        : 'bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]'
                                         }`}
                                 >
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${isBooked ? 'bg-emerald-500/20 text-emerald-400' :
-                                        isLocked ? 'bg-amber-500/20 text-amber-400' :
-                                            isSelected ? 'bg-white/10 text-white' : 'bg-white/5 text-neutral-500'
-                                        }`}>
-                                        {seatName != undefined ? seatName : <IconTicket className="h-4 w-4" />}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={`text-[13px] font-semibold truncate ${isSelected ? 'text-white' : 'text-neutral-300'}`}>{t.ticket_code} - {t.ticket_name}</p>
-                                        <p className="text-[11px] text-neutral-500 truncate">{t.name}</p>
-                                        <div className="flex items-center gap-1.5 mt-1">
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <p className={`text-sm font-semibold truncate ${isSelected ? 'text-emerald-400' : 'text-neutral-200'}`}>{t.ticket_code || t.ticket_id}</p>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[10px] text-neutral-500 truncate max-w-[100px]">{t.name}</span>
                                             {t.gender && (
-                                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${t.gender === 'male' ? 'bg-blue-500/15 text-blue-400' : 'bg-pink-500/15 text-pink-400'}`}>
-                                                    {t.gender}
+                                                <span className={`text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ${t.gender.toLowerCase() === 'male' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400'}`}>
+                                                    {t.gender === 'male' ? 'L' : 'P'}
                                                 </span>
                                             )}
                                             {t.category && (
-                                                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-500/15 text-amber-400">
+                                                <span className="text-[9px] px-1.5 py-0.5 rounded uppercase font-bold bg-amber-500/20 text-amber-400">
                                                     {t.category}
                                                 </span>
                                             )}
                                         </div>
                                     </div>
-                                    {isLocked && <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center"><IconCheck className="h-3 w-3 text-emerald-400" /></div>}
-                                    {isBooked && <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center"><IconCheck className="h-3 w-3 text-blue-400" /></div>}
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${isBooked || isLocked ? 'bg-emerald-500 shadow-md shadow-emerald-500/20 text-white' : 'bg-white/10 text-neutral-400 border border-dashed border-white/20'}`}>
+                                        {isBooked || isLocked ? seatName : <IconArmchair className="h-5 w-5" />}
+                                    </div>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             const key = `war_kursi_tokens_${eventId}`;
-                                            
+
                                             // Unlock seat if it was locked
                                             const lockedSeat = lockedSeats.find(s => s.admin_id === t.ticket_id);
                                             if (lockedSeat) {
-                                                lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.ticket_id).catch(() => {});
+                                                lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.ticket_id).catch(() => { });
                                                 setLockedSeats(prev => prev.filter(s => s.seat_id !== lockedSeat.seat_id));
                                                 setTicketCountdowns(prev => ({ ...prev, [t.ticket_id]: 0 }));
                                             }
@@ -594,10 +604,10 @@ export default function BookingPage() {
                                                 setActiveTicketId(newSessions.length > 0 ? newSessions[0].ticket_id : null);
                                             }
                                         }}
-                                        className="w-7 h-7 flex items-center justify-center hover:bg-red-500/15 rounded-lg text-neutral-600 hover:text-red-400 transition-colors active:scale-90"
+                                        className="w-8 h-8 flex items-center justify-center hover:bg-red-500/20 rounded-lg text-neutral-500 hover:text-red-400 transition-colors active:scale-90 ml-1"
                                         title="Hapus Tiket dari Sesi"
                                     >
-                                        <IconX className="h-3.5 w-3.5" />
+                                        <IconX className="h-4 w-4" />
                                     </button>
                                 </div>
                             );
@@ -646,12 +656,32 @@ export default function BookingPage() {
                             </div>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setShowLegend(!showLegend)}
-                        className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-neutral-400 transition-colors active:scale-95"
-                    >
-                        <IconInfoCircle className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                        {/* Support WhatsApp */}
+                        <a href="https://wa.me/6288227301613" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center text-[#25D366] transition-colors active:scale-95">
+                            <IconBrandWhatsapp className="h-4 w-4" />
+                        </a>
+
+                        {/* Tutorial / Info */}
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <button className="w-9 h-9 rounded-xl bg-[#FF0000]/10 hover:bg-[#FF0000]/20 flex items-center justify-center text-[#FF4444] transition-colors active:scale-95">
+                                    <IconInfoCircle className="h-4 w-4" />
+                                </button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-3xl bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl max-h-[85vh] overflow-y-auto">
+                                {tutorialDialogContent}
+                            </DialogContent>
+                        </Dialog>
+
+                        {/* Legend */}
+                        <button
+                            onClick={() => setShowLegend(!showLegend)}
+                            className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-neutral-400 transition-colors active:scale-95"
+                        >
+                            <IconListDetails className="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* ── Mobile Legend Dropdown ── */}
@@ -672,6 +702,8 @@ export default function BookingPage() {
                         ))}
                     </div>
                 )}
+
+
 
                 {/* ── Desktop Connection Status ── */}
                 <div className="hidden md:flex items-center justify-end px-4 py-2 shrink-0 z-20 border-b border-white/[0.04]" style={{ background: '#0d0d0d' }}>
@@ -709,20 +741,20 @@ export default function BookingPage() {
                     </div>
                 </div>
 
-                {/* ── Countdown Bar ── */}
+                {/* ── Countdown Bar (desktop) ── */}
                 {showCountdownBar && (
-                    <div className="px-4 py-2.5 flex items-center justify-between z-20 shrink-0 border-b border-emerald-500/20"
+                    <div className="hidden md:flex px-4 py-2.5 items-center justify-between z-20 shrink-0 border-b border-emerald-500/20"
                         style={{ background: 'linear-gradient(90deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03))' }}>
                         <div className="flex items-center gap-3">
-                            <span className="text-emerald-400 text-xs md:text-sm font-medium">
+                            <span className="text-emerald-400 text-sm font-medium">
                                 ⏱ <strong className="font-mono">{formatTime(maxLockedCountdown)}</strong>
                             </span>
-                            <span className="text-[11px] text-neutral-400 hidden sm:inline">
+                            <span className="text-[11px] text-neutral-400">
                                 <strong className="text-white">{allLockedPairs.length}</strong> kursi terkunci
                             </span>
                         </div>
                         <button
-                            className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 md:px-4 py-1.5 md:py-2 text-[11px] md:text-xs font-semibold text-white hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50"
                             onClick={() => setShowConfirmDialog(true)}
                             disabled={isLocking}
                         >
@@ -732,10 +764,9 @@ export default function BookingPage() {
                     </div>
                 )}
 
-                {/* ═══════════════ CONFIRM BOOKING DIALOG ═══════════════ */}
-                <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                {/* ═══════════════ CONFIRM BOOKING — Desktop Dialog ═══════════════ */}
+                <Dialog open={showConfirmDialog && typeof window !== 'undefined' && window.innerWidth >= 768} onOpenChange={setShowConfirmDialog}>
                     <DialogContent className="sm:max-w-md bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl p-0 overflow-hidden">
-                        {/* Header */}
                         <div className="px-5 pt-5 pb-3">
                             <DialogHeader>
                                 <DialogTitle className="text-white text-base">Konfirmasi Pemesanan</DialogTitle>
@@ -747,117 +778,92 @@ export default function BookingPage() {
                                 </DialogDescription>
                             </DialogHeader>
                         </div>
-
-                        {/* Content */}
                         <div className="px-5 pb-5 space-y-3 max-h-[60vh] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
-                            {/* List all locked ticket-seat pairs */}
                             {allLockedPairs.map((pair, idx) => {
                                 const cd = ticketCountdowns[pair.session.ticket_id] || 0;
                                 return (
                                     <div key={pair.session.ticket_id} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                        {/* Pair number badge for multi */}
                                         {allLockedPairs.length > 1 && (
                                             <div className="flex items-center gap-2 mb-3">
                                                 <span className="text-[10px] font-bold text-neutral-500 bg-white/[0.06] px-2 py-0.5 rounded-md">#{idx + 1}</span>
-                                                {cd > 0 && (
-                                                    <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">⏱ {formatTime(cd)}</span>
-                                                )}
+                                                {cd > 0 && <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">⏱ {formatTime(cd)}</span>}
                                             </div>
                                         )}
-
-                                        {/* Seat info row */}
                                         <div className="flex items-center gap-3 mb-3">
-                                            <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 text-base font-bold shrink-0 border border-emerald-500/20">
-                                                {pair.seat?.name || '-'}
-                                            </div>
+                                            <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 text-base font-bold shrink-0 border border-emerald-500/20">{pair.seat?.name || '-'}</div>
                                             <div className="min-w-0 flex-1">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <IconArmchair className="h-3.5 w-3.5 text-emerald-400" />
-                                                    <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Kursi</p>
-                                                </div>
                                                 <p className="text-[14px] font-semibold text-white">{pair.seat?.name || 'Tidak diketahui'}</p>
-                                                <div className="flex items-center gap-1.5 mt-0.5">
-                                                    {pair.seat?.gender && pair.seat.gender !== 'both' && (
-                                                        <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase ${pair.seat.gender === 'male' ? 'bg-blue-500/15 text-blue-400' : 'bg-pink-500/15 text-pink-400'}`}>
-                                                            {pair.seat.gender === 'male' ? 'Pria' : 'Wanita'}
-                                                        </span>
-                                                    )}
-                                                    {pair.seat?.category && pair.seat.category !== 'STAGE' && (
-                                                        <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-500/15 text-amber-400">{pair.seat.category}</span>
-                                                    )}
-                                                </div>
+                                                <p className="text-[11px] text-neutral-500 mt-0.5">{pair.session.ticket_code} · {pair.session.name}</p>
                                             </div>
-                                        </div>
-
-                                        {/* Divider */}
-                                        <div className="border-t border-white/[0.04] my-3" />
-
-                                        {/* Ticket info */}
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <IconTicket className="h-3.5 w-3.5 text-blue-400" />
-                                            <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Tiket</p>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[11px] text-neutral-500">Kode</span>
-                                                <span className="text-[12px] font-mono font-semibold text-white">{pair.session.ticket_code}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[11px] text-neutral-500">Jenis</span>
-                                                <span className="text-[12px] font-medium text-neutral-200">{pair.session.ticket_name}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[11px] text-neutral-500">Peserta</span>
-                                                <span className="text-[12px] font-medium text-neutral-200">{pair.session.name}</span>
-                                            </div>
-                                            {pair.session.gender && (
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[11px] text-neutral-500">Gender</span>
-                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${pair.session.gender === 'male' ? 'bg-blue-500/15 text-blue-400' : 'bg-pink-500/15 text-pink-400'}`}>
-                                                        {pair.session.gender === 'male' ? 'Pria' : 'Wanita'}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {pair.session.category && (
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[11px] text-neutral-500">Kategori</span>
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-amber-500/15 text-amber-400">{pair.session.category}</span>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 );
                             })}
-
-                            {allLockedPairs.length === 0 && (
-                                <div className="text-center py-6">
-                                    <p className="text-sm text-neutral-600">Tidak ada kursi yang terkunci.</p>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
                             <div className="flex gap-2 pt-2 sticky bottom-0" style={{ background: '#141414' }}>
-                                <button
-                                    onClick={() => setShowConfirmDialog(false)}
-                                    className="flex-1 py-2.5 rounded-xl text-sm font-medium text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-all active:scale-[0.97] border border-white/[0.06]"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    onClick={handleConfirmBooking}
-                                    disabled={isLocking || allLockedPairs.length === 0}
-                                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {isLocking ? (
-                                        <><IconLoader2 className="h-4 w-4 animate-spin" /> Memproses...</>
-                                    ) : (
-                                        <><IconCheck className="h-4 w-4" /> Konfirmasi {allLockedPairs.length > 1 ? `(${allLockedPairs.length})` : 'Kursi'}</>
-                                    )}
+                                <button onClick={() => setShowConfirmDialog(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-neutral-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] transition-all active:scale-[0.97] border border-white/[0.06]">Batal</button>
+                                <button onClick={handleConfirmBooking} disabled={isLocking || allLockedPairs.length === 0} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                    {isLocking ? (<><IconLoader2 className="h-4 w-4 animate-spin" /> Memproses...</>) : (<><IconCheck className="h-4 w-4" /> Konfirmasi {allLockedPairs.length > 1 ? `(${allLockedPairs.length})` : 'Kursi'}</>)}
                                 </button>
                             </div>
                         </div>
                     </DialogContent>
                 </Dialog>
+
+                {/* ═══════════════ CONFIRM BOOKING — Mobile Bottom Drawer ═══════════════ */}
+                <Drawer open={showConfirmDialog && typeof window !== 'undefined' && window.innerWidth < 768} onOpenChange={setShowConfirmDialog}>
+                    <DrawerContent className="bg-[#141414] border-t-white/[0.08] text-white max-h-[85vh]">
+                        <div className="mx-auto w-full max-w-lg">
+                            <DrawerHeader className="pb-2">
+                                <DrawerTitle className="text-white font-bold text-lg">Konfirmasi Pemesanan</DrawerTitle>
+                                <DrawerDescription className="text-neutral-400 text-sm">
+                                    {allLockedPairs.length > 1
+                                        ? `${allLockedPairs.length} kursi akan dikonfirmasi.`
+                                        : 'Pastikan detail berikut sudah benar.'
+                                    }
+                                </DrawerDescription>
+                            </DrawerHeader>
+
+                            <div className="px-4 pb-4 space-y-2.5 overflow-y-auto max-h-[50vh]" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
+                                {allLockedPairs.map((pair, idx) => {
+                                    const cd = ticketCountdowns[pair.session.ticket_id] || 0;
+                                    return (
+                                        <div key={pair.session.ticket_id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                            {allLockedPairs.length > 1 && (
+                                                <span className="text-[10px] font-bold text-neutral-500 bg-white/[0.06] w-6 h-6 rounded-lg flex items-center justify-center shrink-0">#{idx + 1}</span>
+                                            )}
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 text-sm font-bold shrink-0 border border-emerald-500/20">
+                                                {pair.seat?.name || '-'}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[13px] font-semibold text-white">{pair.session.name}</p>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <span className="text-[10px] font-mono text-neutral-400">{pair.session.ticket_code}</span>
+                                                    {pair.session.gender && (
+                                                        <span className={`text-[8px] px-1 rounded font-bold uppercase ${pair.session.gender === 'male' ? 'bg-blue-500/15 text-blue-400' : 'bg-pink-500/15 text-pink-400'}`}>
+                                                            {pair.session.gender === 'male' ? 'L' : 'P'}
+                                                        </span>
+                                                    )}
+                                                    {pair.session.category && (
+                                                        <span className="text-[8px] px-1 rounded font-bold uppercase bg-amber-500/15 text-amber-400">{pair.session.category}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {cd > 0 && <span className="text-[10px] font-mono text-amber-400 shrink-0">{formatTime(cd)}</span>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Bottom action */}
+                            <div className="px-4 pb-6 pt-2 flex gap-2">
+                                <button onClick={() => setShowConfirmDialog(false)} className="flex-1 py-3 rounded-xl text-sm font-medium text-neutral-400 bg-white/[0.04] active:scale-[0.97] border border-white/[0.06] transition-all">Batal</button>
+                                <button onClick={handleConfirmBooking} disabled={isLocking || allLockedPairs.length === 0} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-emerald-600 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all">
+                                    {isLocking ? (<><IconLoader2 className="h-4 w-4 animate-spin" /> Memproses...</>) : (<><IconCheck className="h-4 w-4" /> Konfirmasi {allLockedPairs.length > 1 ? `(${allLockedPairs.length})` : ''}</>)}
+                                </button>
+                            </div>
+                        </div>
+                    </DrawerContent>
+                </Drawer>
 
                 {/* ── War Countdown Overlay ── */}
                 {msUntilWar > 0 && (
@@ -983,7 +989,7 @@ export default function BookingPage() {
                                                             <p className="text-[15px] font-bold text-white">
                                                                 {status === 'booked' ? '✕' : status === 'session_booked' ? '✓' : status === 'locked' ? '🔒' : status === 'session_locked' ? '🔒' : seatData.name}
                                                             </p>
-                                                            {status == 'session_booked' ? <p className="text-[15px] text-white/80 font-bold">{seatData.name}</p> : <p className="text-[10px] text-white/80">{seatData.name}</p>}
+                                                            {status == 'session_booked' ? <p className="text-[15px] text-white/80 font-bold">{seatData.name}</p> : <p className="text-[10px] text-white/80">{seatData.category}</p>}
                                                             {seatData.gender && seatData.gender !== 'both' && (
                                                                 <div className={`absolute top-0 right-0 w-3 h-3 rounded-bl-sm flex items-center justify-center text-[7px] font-bold ${seatData.gender === 'male' ? 'bg-blue-500 text-white' : 'bg-pink-500 text-white'
                                                                     }`}>
@@ -1002,49 +1008,75 @@ export default function BookingPage() {
                     )}
                 </div>
 
-                {/* ═══════════════ MOBILE BOTTOM SHEET ═══════════════ */}
-                {/* Toggle handle bar (always visible on mobile) */}
-                <div className="md:hidden shrink-0 z-30" style={{ background: '#0f0f0f', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    {/* Collapsed bar - tap to expand */}
-                    <button
-                        onClick={() => setMobileSheetOpen(!mobileSheetOpen)}
-                        className="w-full px-4 py-3 flex items-center justify-between active:bg-white/[0.03] transition-colors"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center">
-                                <IconTicket className="h-4 w-4 text-neutral-400" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-[13px] font-semibold text-white">
-                                    {ticketSessions.length > 0
-                                        ? `${ticketSessions.length} Tiket Aktif`
-                                        : 'Tambah Tiket'
-                                    }
-                                </p>
-                                {activeTicketId && ticketSessions.length > 0 && (
-                                    <p className="text-[11px] text-neutral-500 truncate max-w-[200px]">
-                                        {ticketSessions.find(t => t.ticket_id === activeTicketId)?.ticket_code} - {ticketSessions.find(t => t.ticket_id === activeTicketId)?.name}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {myLockedSeatId && activeCountdown > 0 && (
-                                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">{formatTime(activeCountdown)}</span>
-                            )}
-                            {mobileSheetOpen ? (
-                                <IconChevronDown className="h-5 w-5 text-neutral-500" />
-                            ) : (
-                                <IconChevronUp className="h-5 w-5 text-neutral-500" />
-                            )}
-                        </div>
-                    </button>
+                {/* ═══════════════ MOBILE BOTTOM TICKET BAR ═══════════════ */}
+                <div className="md:hidden shrink-0 z-30 flex flex-col bg-[#0f0f0f] border-t border-white/[0.06]">
+                    <div className="px-4 py-3 flex gap-3 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
+                        {ticketSessions.length === 0 && (
+                            <span className="text-[11px] text-neutral-500 whitespace-nowrap italic">Belum ada tiket di sesi ini.</span>
+                        )}
+                        {ticketSessions.map((t) => {
+                            const isActive = activeTicketId === t.ticket_id;
+                            const bookedSeatItem = bookedSeatsData.find(b => b.ticket_id === t.ticket_id);
+                            const lockedSeatItem = lockedSeats.find(ls => ls.admin_id === t.ticket_id);
+                            const isBooked = !!bookedSeatItem;
+                            const isLocked = !!lockedSeatItem && !isBooked;
+                            const seatName = bookedSeatItem?.seat?.name ||
+                                (bookedSeatItem ? seats.find(s => s.id === bookedSeatItem.seat_id)?.name : null) ||
+                                (lockedSeatItem ? seats.find(s => s.id === lockedSeatItem.seat_id)?.name : null);
 
-                    {/* Expanded content */}
-                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileSheetOpen ? 'max-h-[70vh]' : 'max-h-0'}`}>
-                        <div className="overflow-y-auto max-h-[70vh]" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
-                            {sidebarContent}
-                        </div>
+                            return (
+                                <div key={t.ticket_id} onClick={() => setActiveTicketId(t.ticket_id)} className={`shrink-0 flex items-center h-14 rounded-xl border pl-3 pr-2 gap-3 cursor-pointer transition-all ${isActive ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]'}`}>
+                                    <div className="flex flex-col justify-center min-w-[100px] max-w-[140px]">
+                                        <p className={`text-[13px] font-semibold truncate ${isActive ? 'text-emerald-400' : 'text-neutral-200'}`}>{t.ticket_code || t.ticket_id}</p>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[10px] text-neutral-500 truncate max-w-[80px]">{t.name}</span>
+                                            {t.gender && <span className={`text-[9px] px-1 rounded uppercase font-bold ${t.gender.toLowerCase() === 'male' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400'}`}>{t.gender === 'male' ? 'L' : 'P'}</span>}
+                                            {t.category && <span className={`text-[9px] px-1 rounded uppercase font-bold ${t.category.toLowerCase() === 'platinum' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-pink-500/20 text-pink-400'}`}>{t.category}</span>}
+                                        </div>
+                                    </div>
+                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold ${isBooked || isLocked ? 'bg-emerald-500 shadow-md shadow-emerald-500/20 text-white' : 'bg-white/10 text-neutral-400 border border-dashed border-white/20'}`}>
+                                        {isBooked || isLocked ? seatName : <IconArmchair className="h-4 w-4" />}
+                                    </div>
+                                    <button onClick={(e) => {
+                                        e.stopPropagation();
+                                        const key = `war_kursi_tokens_${eventId}`;
+                                        const lockedSeat = lockedSeats.find(s => s.admin_id === t.ticket_id);
+                                        if (lockedSeat) {
+                                            lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.ticket_id).catch(() => { });
+                                            setLockedSeats(prev => prev.filter(s => s.seat_id !== lockedSeat.seat_id));
+                                            setTicketCountdowns(prev => ({ ...prev, [t.ticket_id]: 0 }));
+                                        }
+                                        const newSessions = ticketSessions.filter(ts => ts.ticket_id !== t.ticket_id);
+                                        setTicketSessions(newSessions);
+                                        localStorage.setItem(key, JSON.stringify(newSessions.map(ts => ts.token)));
+                                        if (isActive) setActiveTicketId(newSessions.length > 0 ? newSessions[0].ticket_id : null);
+                                    }} className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-red-500/20 text-neutral-500 hover:text-red-400 transition-colors ml-1">
+                                        <IconX className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="px-4 py-2.5 border-t border-white/[0.06] flex flex-col gap-2.5 bg-white/[0.02]">
+                        <VerifyTicketDialog eventId={eventId} onVerified={handleAddTickets}>
+                            <button className="flex w-full items-center justify-center gap-2 h-11 rounded-xl border border-dashed border-white/20 hover:border-white/40 bg-white/[0.03] hover:bg-white/[0.06] transition-all text-neutral-400 hover:text-white">
+                                <IconPlus className="h-4 w-4" />
+                                <span className="text-sm font-semibold">Tambah Tiket</span>
+                            </button>
+                        </VerifyTicketDialog>
+
+                        {allLockedPairs.length > 0 && (
+                            <div className="flex items-center justify-between pt-0.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-emerald-400 text-sm font-medium">⏱ <strong className="font-mono">{formatTime(maxLockedCountdown)}</strong></span>
+                                    <span className="text-[12px] text-neutral-400"><strong className="text-white">{allLockedPairs.length}</strong> kursi</span>
+                                </div>
+                                <button className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20" onClick={() => setShowConfirmDialog(true)}>
+                                    <IconCheck className="h-4 w-4" /> Konfirmasi
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

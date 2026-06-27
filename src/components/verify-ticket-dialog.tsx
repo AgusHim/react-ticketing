@@ -8,7 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-export function VerifyTicketDialog({ eventId, onVerified }: { eventId: string, onVerified: (tickets: VerifyResult[]) => void }) {
+export function VerifyTicketDialog({ eventId, onVerified, children }: { eventId: string, onVerified: (tickets: VerifyResult[]) => void, children?: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isParsing, setIsParsing] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
@@ -30,7 +30,7 @@ export function VerifyTicketDialog({ eventId, onVerified }: { eventId: string, o
 
             // Filter tickets matching current event
             const validTickets = tickets.filter(t => t.event_id === eventId);
-            
+
             if (validTickets.length === 0) {
                 toast.error('Tiket dalam PDF ini bukan untuk event yang dipilih!');
                 return;
@@ -41,7 +41,7 @@ export function VerifyTicketDialog({ eventId, onVerified }: { eventId: string, o
             } else {
                 toast.success(`Berhasil memverifikasi ${validTickets.length} tiket sekaligus`);
             }
-            
+
             onVerified(validTickets);
             setIsOpen(false);
         } catch (err: any) {
@@ -84,15 +84,17 @@ export function VerifyTicketDialog({ eventId, onVerified }: { eventId: string, o
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <button className="text-[10px] font-bold text-white hover:text-white transition-colors bg-orange-500 hover:bg-orange-600 px-2.5 py-1.5 rounded-full">
-                    + Tambah Tiket
-                </button>
+                {children ? children : (
+                    <button className="text-[10px] font-bold text-white hover:text-white transition-colors bg-orange-500 hover:bg-orange-600 px-2.5 py-1.5 rounded-full">
+                        + Tambah Tiket
+                    </button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-slate-200">
                 <DialogHeader>
                     <DialogTitle className="text-white">Tambah Tiket ke Sesi</DialogTitle>
                     <DialogDescription className="text-slate-400">
-                        Upload file PDF e-ticket Anda untuk ditambahkan ke sesi war kursi ini.
+                        Sebelumnya download e-tiket darisini.com . Upload file PDF e-ticket Anda untuk ditambahkan ke sesi war kursi ini.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -112,19 +114,16 @@ export function VerifyTicketDialog({ eventId, onVerified }: { eventId: string, o
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
-                                className={`relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all duration-200 ${
-                                    isDragOver
+                                className={`relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all duration-200 ${isDragOver
                                         ? 'border-primary bg-primary/10 scale-[1.02]'
                                         : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700/30'
-                                }`}
+                                    }`}
                             >
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className={`rounded-full p-3 transition-colors ${
-                                        isDragOver ? 'bg-primary/20' : 'bg-slate-700/50'
-                                    }`}>
-                                        <IconUpload className={`h-6 w-6 transition-colors ${
-                                            isDragOver ? 'text-primary' : 'text-slate-400'
-                                        }`} />
+                                    <div className={`rounded-full p-3 transition-colors ${isDragOver ? 'bg-primary/20' : 'bg-slate-700/50'
+                                        }`}>
+                                        <IconUpload className={`h-6 w-6 transition-colors ${isDragOver ? 'text-primary' : 'text-slate-400'
+                                            }`} />
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-white">
@@ -137,10 +136,10 @@ export function VerifyTicketDialog({ eventId, onVerified }: { eventId: string, o
                                 </div>
                             </div>
 
-                            <a 
-                                href="https://www.darisini.com/orders" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
+                            <a
+                                href="https://www.darisini.com/orders"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="w-full block mt-2"
                             >
                                 <button type="button" className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white py-2.5 rounded-xl transition-colors border border-slate-700 font-medium text-sm flex items-center justify-center gap-2">

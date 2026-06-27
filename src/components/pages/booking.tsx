@@ -938,8 +938,8 @@ export default function BookingPage() {
                             <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-5">
                                 <IconTicket className="h-7 w-7 text-red-500" />
                             </div>
-                            <h2 className="text-xl md:text-2xl font-bold text-white mb-2">War Tiket Belum Dimulai</h2>
-                            <p className="text-sm text-neutral-500 mb-6 md:mb-8">Persiapkan dirimu!</p>
+                            <h2 className="text-xl md:text-2xl font-bold text-white mb-2">War Kursi Belum Dimulai</h2>
+                            <p className="text-sm text-neutral-500 mb-6 md:mb-8">Persiapkan e-tiketmu. Silahkan download <a href="https://darisini.com/orders" target="_blank" rel="noopener noreferrer" className="text-emerald-400 underline hover:text-emerald-500">darisini</a>.</p>
                             <div className="flex gap-3 justify-center">
                                 {[
                                     { label: 'Hari', value: Math.floor(msUntilWar / (1000 * 60 * 60 * 24)) },

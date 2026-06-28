@@ -69,6 +69,16 @@ export default function BookingPage() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [showLegend, setShowLegend] = useState(false);
     const [showInvoice, setShowInvoice] = useState(false);
+    const [showTutorial, setShowTutorial] = useState(false);
+
+    useEffect(() => {
+        if (!eventId) return;
+        const key = `tutorial_seen_${eventId}`;
+        if (!localStorage.getItem(key)) {
+            setShowTutorial(true);
+            localStorage.setItem(key, 'true');
+        }
+    }, [eventId]);
 
     const bookedTicketsInSession = useMemo(() => {
         return ticketSessions.filter(t => bookedSeatsData.some(b => b.ticket_id === t.ticket_id));
@@ -258,7 +268,7 @@ export default function BookingPage() {
                         if (next[id] === 0) {
                             const locked = lockedSeatsRef.current.find(s => s.admin_id === id);
                             if (locked && locked.seat_id) {
-                                lockSeatWarKursi(eventId, locked.seat_id, id, 'unlock').catch(() => {});
+                                lockSeatWarKursi(eventId, locked.seat_id, id, 'unlock').catch(() => { });
                             }
                         }
                     }
@@ -449,7 +459,7 @@ export default function BookingPage() {
                 <iframe
                     width="100%"
                     height="100%"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    src="https://www.youtube.com/embed/7otiEz7wSkg"
                     title="YouTube video player"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -541,17 +551,10 @@ export default function BookingPage() {
                         <span>Support</span>
                     </a>
 
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <button className="flex items-center justify-center gap-2 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 text-[#FF4444] py-2.5 rounded-xl transition-all duration-200 font-medium text-xs w-full active:scale-[0.97]">
-                                <IconBrandYoutube className="h-4 w-4" />
-                                <span>Tutorial</span>
-                            </button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-3xl bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl max-h-[85vh] overflow-y-auto">
-                            {tutorialDialogContent}
-                        </DialogContent>
-                    </Dialog>
+                    <button onClick={() => setShowTutorial(true)} className="flex items-center justify-center gap-2 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 text-[#FF4444] py-2.5 rounded-xl transition-all duration-200 font-medium text-xs w-full active:scale-[0.97]">
+                        <IconBrandYoutube className="h-4 w-4" />
+                        <span>Tutorial</span>
+                    </button>
                 </div>
 
                 {hasBookedSeats && (
@@ -689,16 +692,9 @@ export default function BookingPage() {
                         </a>
 
                         {/* Tutorial / Info */}
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <button className="w-9 h-9 rounded-xl bg-[#FF0000]/10 hover:bg-[#FF0000]/20 flex items-center justify-center text-[#FF4444] transition-colors active:scale-95">
-                                    <IconInfoCircle className="h-4 w-4" />
-                                </button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-3xl bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl max-h-[85vh] overflow-y-auto">
-                                {tutorialDialogContent}
-                            </DialogContent>
-                        </Dialog>
+                        <button onClick={() => setShowTutorial(true)} className="w-9 h-9 rounded-xl bg-[#FF0000]/10 hover:bg-[#FF0000]/20 flex items-center justify-center text-[#FF4444] transition-colors active:scale-95">
+                            <IconInfoCircle className="h-4 w-4" />
+                        </button>
 
                         {/* Legend */}
                         <button
@@ -835,9 +831,16 @@ export default function BookingPage() {
                     </DialogContent>
                 </Dialog>
 
+                {/* ═══════════════ TUTORIAL DIALOG ═══════════════ */}
+                <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
+                    <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-3xl bg-[#141414] border-neutral-800 text-neutral-200 rounded-2xl max-h-[85vh] overflow-y-auto">
+                        {tutorialDialogContent}
+                    </DialogContent>
+                </Dialog>
+
                 {/* ═══════════════ E-INVOICE DIALOG ═══════════════ */}
                 <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
-                    <DialogContent className="sm:max-w-md bg-[#141414] border-neutral-800 text-neutral-200 mx-4 rounded-2xl max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-md bg-[#141414] border-neutral-800 text-neutral-200 rounded-2xl max-h-[85vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle className="text-white text-base">Invoice Booking</DialogTitle>
                             <DialogDescription className="text-neutral-500 text-sm">

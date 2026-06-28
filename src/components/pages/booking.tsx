@@ -10,7 +10,7 @@ import type { SocketMessage } from '@/types/socket-message';
 import { toast } from 'sonner';
 import { IconArrowLeft, IconCheck, IconLoader2, IconTicket, IconCalendarEvent, IconMapPin, IconX, IconBrandWhatsapp, IconBrandYoutube, IconInfoCircle, IconPlus, IconArmchair, IconListDetails, IconReceipt } from '@tabler/icons-react';
 import { VerifyTicketDialog } from '@/components/verify-ticket-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 
 interface LockedSeat {

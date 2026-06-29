@@ -971,6 +971,20 @@ export default function BookingPage() {
                                     </div>
                                 ))}
                             </div>
+
+                            <div className="md:hidden mt-8 border-t border-white/[0.06] pt-6">
+                                <VerifyTicketDialog eventId={eventId} onVerified={handleAddTickets}>
+                                    <button className="flex w-full items-center justify-center gap-2 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] transition-all text-white shadow-lg shadow-emerald-500/20">
+                                        <IconPlus className="h-5 w-5" />
+                                        <span className="text-sm font-semibold">Tambah e-Tiket Sekarang</span>
+                                    </button>
+                                </VerifyTicketDialog>
+                                <p className="text-[11px] text-neutral-500 mt-3">
+                                    {ticketSessions.length > 0 
+                                        ? `Anda sudah menambahkan ${ticketSessions.length} tiket.` 
+                                        : 'Tambahkan tiket sekarang agar bisa langsung pilih kursi saat war dimulai.'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}

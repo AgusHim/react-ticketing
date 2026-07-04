@@ -41,7 +41,7 @@ export default function DashboardPage() {
       });
       setEventData(updated);
       toast.success("Jadwal War Tiket berhasil disimpan!");
-    } catch (err) {
+    } catch {
       toast.error("Gagal menyimpan jadwal War Tiket");
     } finally {
       setIsLoading(false);

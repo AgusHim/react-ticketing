@@ -27,8 +27,26 @@ type BookedSeat = {
 };
 
 function tokenFor(ticket: TestTicket) {
-  const payload = Buffer.from(JSON.stringify(ticket)).toString('base64');
+  const payload = Buffer.from(JSON.stringify({
+    ...ticket,
+    ticket_name: 'VIP',
+    event_id: eventId,
+    type: 'war_kursi',
+  })).toString('base64');
   return `e2e.${payload}.signature`;
+}
+
+function ticketFromAuthorization(headers: Record<string, string>, fallback: TestTicket) {
+  const authorization = headers.authorization || '';
+  const token = authorization.replace(/^Bearer\s+/i, '');
+  const payload = token.split('.')[1];
+  if (!payload) return fallback;
+
+  try {
+    return JSON.parse(Buffer.from(payload, 'base64').toString('utf8')) as TestTicket;
+  } catch {
+    return fallback;
+  }
 }
 
 async function mockBookingBackend(
@@ -107,7 +125,18 @@ async function mockBookingBackend(
     }
 
     if (request.method() === 'GET' && path === '/api/booked-seats') {
-      await route.fulfill({ json: { data: state.bookedSeats } });
+      await route.fulfill({
+        json: {
+          data: state.bookedSeats.map(({ seat_id, event_id }) => ({ seat_id, event_id })),
+        },
+      });
+      return;
+    }
+
+    if (request.method() === 'GET' && path === '/api/booked-seats/me') {
+      const requester = ticketFromAuthorization(request.headers(), ticket);
+      const booked = state.bookedSeats.find((item) => item.ticket_id === requester.ticket_id) || null;
+      await route.fulfill({ json: { data: booked } });
       return;
     }
 
@@ -128,10 +157,11 @@ async function mockBookingBackend(
     }
 
     if (request.method() === 'POST' && path === '/api/seats/lock') {
-      const body = request.postDataJSON() as { seat_id: string; admin_id: string };
+      const body = request.postDataJSON() as { seat_id: string };
+      const requester = ticketFromAuthorization(request.headers(), ticket);
       const existing = state.lockedSeats.get(body.seat_id);
 
-      if (existing?.admin_id === body.admin_id) {
+      if (existing?.admin_id === requester.ticket_id) {
         state.lockedSeats.delete(body.seat_id);
         await route.fulfill({ json: { status: 'unlocked' } });
         return;
@@ -150,7 +180,7 @@ async function mockBookingBackend(
       state.lockedSeats.set(body.seat_id, {
         id: `${eventId}:${body.seat_id}`,
         seat_id: body.seat_id,
-        admin_id: body.admin_id,
+        admin_id: requester.ticket_id,
         event_id: eventId,
       });
       await route.fulfill({ json: { status: 'locked' } });
@@ -158,10 +188,11 @@ async function mockBookingBackend(
     }
 
     if (request.method() === 'POST' && path === '/api/seats/confirm') {
-      const body = request.postDataJSON() as { seat_id: string; ticket_id: string; name: string };
+      const body = request.postDataJSON() as { seat_id: string };
+      const requester = ticketFromAuthorization(request.headers(), ticket);
       const lock = state.lockedSeats.get(body.seat_id);
 
-      if (!lock || lock.admin_id !== body.ticket_id) {
+      if (!lock || lock.admin_id !== requester.ticket_id) {
         await route.fulfill({
           status: 409,
           json: { message: 'Kursi belum terkunci untuk tiket ini' },
@@ -172,9 +203,9 @@ async function mockBookingBackend(
       state.lockedSeats.delete(body.seat_id);
       state.bookedSeats.push({
         seat_id: body.seat_id,
-        ticket_id: body.ticket_id,
+        ticket_id: requester.ticket_id,
         event_id: eventId,
-        name: body.name,
+        name: requester.name,
       });
       await route.fulfill({ json: { data: { status: 'confirmed' } } });
       return;
@@ -185,6 +216,9 @@ async function mockBookingBackend(
 }
 
 async function uploadTicket(page: Page) {
+  await page.addInitScript((id) => {
+    window.localStorage.setItem(`tutorial_seen_${id}`, 'true');
+  }, eventId);
   await page.goto(`/booking/${eventId}`);
   await expect(page.locator('h1', { hasText: 'Integration Test Event' })).toBeVisible();
   await page.getByTestId('mobile-add-ticket-button').click();

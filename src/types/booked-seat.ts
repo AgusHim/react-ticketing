@@ -13,6 +13,8 @@ export type BookedSeat = {
     created_at?: string;
 };
 
+export type PublicBookedSeat = Pick<BookedSeat, 'seat_id' | 'event_id'>;
+
 export type ResDeleteBookedSeat = {
     success: boolean;
     message: string;

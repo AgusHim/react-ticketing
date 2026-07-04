@@ -54,12 +54,15 @@ export const verifyTicketPDF = async (file: File): Promise<VerifyResult[]> => {
 
 
 // Public: Lock/unlock a seat during war kursi
-export const lockSeatWarKursi = async (eventId: string, seatId: string, userId: string, action?: 'lock' | 'unlock') => {
+export const lockSeatWarKursi = async (eventId: string, seatId: string, token: string, action?: 'lock' | 'unlock') => {
   const res = await axiosInstance.post('/api/seats/lock', {
     show_id: eventId,
     seat_id: seatId,
-    admin_id: userId,
     action: action,
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
   return res.data;
 };
@@ -73,12 +76,14 @@ export const getLockedSeats = async (eventId: string) => {
 };
 
 // Public: Confirm a locked seat permanently
-export const confirmSeatBooking = async (eventId: string, seatId: string, ticketId: string, name: string) => {
+export const confirmSeatBooking = async (eventId: string, seatId: string, token: string) => {
   const res = await axiosInstance.post('/api/seats/confirm', {
     event_id: eventId,
     seat_id: seatId,
-    ticket_id: ticketId,
-    name: name,
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
   return res.data;
 };

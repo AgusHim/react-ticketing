@@ -372,7 +372,7 @@ function BookedSeatsPageInner() {
                         </div>
 
                         <div className="px-5 pb-5 space-y-3 max-h-[60vh] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
-                            {lockedPairsForConfirm.map((pair, _) => {
+                            {lockedPairsForConfirm.map((pair) => {
                                 return (
                                     <div key={pair.locked.seat_id} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.06)' }}>
                                         <div className="flex items-center gap-3">

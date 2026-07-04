@@ -47,7 +47,7 @@ export default function EventsPage() {
     try {
       const data = await getAllEvents();
       setEvents(data);
-    } catch (err) {
+    } catch {
       toast.error('Gagal mengambil data event');
     } finally {
       setLoading(false);

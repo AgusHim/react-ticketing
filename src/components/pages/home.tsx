@@ -12,7 +12,7 @@ export default function HomePage() {
     useEffect(() => {
         getAllEvents()
             .then(data => setEvents(data))
-            .catch(_ => toast.error("Gagal memuat event"))
+            .catch(() => toast.error("Gagal memuat event"))
             .finally(() => setIsLoading(false));
     }, []);
 

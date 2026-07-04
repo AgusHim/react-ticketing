@@ -3,7 +3,7 @@ import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { CELL_SIZE } from '@/config/config';
 import { findSeats } from '@/api/seatApi';
 import { lockSeatWarKursi, getLockedSeats, confirmSeatBooking } from '@/api/war-kursi-api';
-import { findBookedSeats } from '@/api/booked-seat-api';
+import { findMyBookedSeat, findPublicBookedSeats } from '@/api/booked-seat-api';
 import type { Seat } from '@/types/seat';
 import type { BookedSeat } from '@/types/booked-seat';
 import type { SocketMessage } from '@/types/socket-message';
@@ -63,6 +63,7 @@ export default function BookingPage() {
     const [ticketSessions, setTicketSessions] = useState<TicketSession[]>([]);
     const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
     const [ticketCountdowns, setTicketCountdowns] = useState<Record<string, number>>({});
+    const ticketSessionsRef = useRef<TicketSession[]>([]);
 
 
     // Confirm booking dialog
@@ -84,6 +85,10 @@ export default function BookingPage() {
         return ticketSessions.filter(t => bookedSeatsData.some(b => b.ticket_id === t.ticket_id));
     }, [ticketSessions, bookedSeatsData]);
     const hasBookedSeats = bookedTicketsInSession.length > 0;
+
+    useEffect(() => {
+        ticketSessionsRef.current = ticketSessions;
+    }, [ticketSessions]);
 
     // Read tokens from localStorage
     useEffect(() => {
@@ -132,13 +137,27 @@ export default function BookingPage() {
         getLockedSeats(eventId).then((data: LockedSeat[]) => {
             if (data) setLockedSeats(data);
         }).catch(() => { });
-        findBookedSeats(eventId).then(data => {
+        findPublicBookedSeats(eventId).then(data => {
             if (data) {
-                setBookedSeatsData(data);
                 setBookedSeatIds(data.map(d => d.seat_id).filter((id): id is string => id !== undefined));
             }
         }).catch(() => { });
     }, [eventId]);
+
+    useEffect(() => {
+        if (!eventId || ticketSessions.length === 0) {
+            setBookedSeatsData([]);
+            return;
+        }
+
+        Promise.all(
+            ticketSessions.map(session =>
+                findMyBookedSeat(eventId, session.token).catch(() => null)
+            )
+        ).then(bookings => {
+            setBookedSeatsData(bookings.filter((booking): booking is BookedSeat => booking !== null));
+        });
+    }, [eventId, ticketSessions]);
 
     // Calculate bounding box of all seats to auto-fit viewport
     const layoutBounds = useMemo(() => {
@@ -184,7 +203,7 @@ export default function BookingPage() {
         // Calculate scale to fit within viewport
         const scaleX = window.innerWidth / layoutBounds.width;
         const scaleY = (window.innerHeight - 100) / layoutBounds.height;
-        let scale = Math.min(scaleX, scaleY) * 0.95; // 95% to leave some margin
+        const scale = Math.min(scaleX, scaleY) * 0.95; // 95% to leave some margin
         return Math.max(0.1, Math.min(scale, 1.5)); // clamp between 0.1 and 1.5
     }, [layoutBounds]);
 
@@ -267,8 +286,9 @@ export default function BookingPage() {
                         changed = true;
                         if (next[id] === 0) {
                             const locked = lockedSeatsRef.current.find(s => s.admin_id === id);
+                            const session = ticketSessionsRef.current.find(s => s.ticket_id === id);
                             if (locked && locked.seat_id) {
-                                lockSeatWarKursi(eventId, locked.seat_id, id, 'unlock').catch(() => { });
+                                if (session) lockSeatWarKursi(eventId, locked.seat_id, session.token, 'unlock').catch(() => { });
                             }
                         }
                     }
@@ -310,6 +330,10 @@ export default function BookingPage() {
         }
 
         const activeSession = ticketSessions.find(t => t.ticket_id === ticketId);
+        if (!activeSession) {
+            toast.error('Sesi tiket tidak valid. Verifikasi ulang tiket Anda.');
+            return;
+        }
         if (activeSession && seat.gender && seat.gender !== 'both') {
             if (!activeSession.gender) {
                 toast.error(`Maaf, kursi ini khusus ${seat.gender.toLowerCase() === 'male' ? 'pria' : 'wanita'}, tiket Anda tidak memiliki informasi gender.`);
@@ -340,7 +364,7 @@ export default function BookingPage() {
 
         setIsLocking(true);
         try {
-            const res = await lockSeatWarKursi(eventId, seat.id!, ticketId);
+            const res = await lockSeatWarKursi(eventId, seat.id!, activeSession.token);
             if (res.status === 'locked') {
                 // Optimistic UI update
                 setLockedSeats(prev => {
@@ -413,10 +437,9 @@ export default function BookingPage() {
         if (allLockedPairs.length === 0) return;
         setIsLocking(true);
         let successCount = 0;
-        let failCount = 0;
         for (const pair of allLockedPairs) {
             try {
-                await confirmSeatBooking(eventId, pair.seatId, pair.session.ticket_id, pair.session.name);
+                await confirmSeatBooking(eventId, pair.seatId, pair.session.token);
                 successCount++;
                 // Optimistic UI update per pair
                 setBookedSeatIds(prev => [...prev, pair.seatId]);
@@ -424,7 +447,6 @@ export default function BookingPage() {
                 setLockedSeats(prev => prev.filter(s => s.seat_id !== pair.seatId));
                 setTicketCountdowns(prev => ({ ...prev, [pair.session.ticket_id]: 0 }));
             } catch (err: any) {
-                failCount++;
                 toast.error(`Gagal konfirmasi ${pair.session.ticket_code}: ${err?.response?.data?.message || 'Error'}`);
             }
         }
@@ -621,7 +643,7 @@ export default function BookingPage() {
                                             // Unlock seat if it was locked
                                             const lockedSeat = lockedSeats.find(s => s.admin_id === t.ticket_id);
                                             if (lockedSeat) {
-                                                lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.ticket_id).catch(() => { });
+                                                lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.token, 'unlock').catch(() => { });
                                                 setLockedSeats(prev => prev.filter(s => s.seat_id !== lockedSeat.seat_id));
                                                 setTicketCountdowns(prev => ({ ...prev, [t.ticket_id]: 0 }));
                                             }
@@ -1139,7 +1161,7 @@ export default function BookingPage() {
                                         const key = `war_kursi_tokens_${eventId}`;
                                         const lockedSeat = lockedSeats.find(s => s.admin_id === t.ticket_id);
                                         if (lockedSeat) {
-                                            lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.ticket_id).catch(() => { });
+                                            lockSeatWarKursi(eventId, lockedSeat.seat_id!, t.token, 'unlock').catch(() => { });
                                             setLockedSeats(prev => prev.filter(s => s.seat_id !== lockedSeat.seat_id));
                                             setTicketCountdowns(prev => ({ ...prev, [t.ticket_id]: 0 }));
                                         }

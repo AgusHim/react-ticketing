@@ -75,7 +75,9 @@ export default function VerifyTicketPage() {
         let existingTokens: string[] = [];
         try {
             if (existingRaw) existingTokens = JSON.parse(existingRaw);
-        } catch { }
+        } catch {
+            existingTokens = [];
+        }
 
         // Combine existing tokens with new tokens (avoid duplicates by token string)
         const newTokens = newTickets.map(t => t.token);

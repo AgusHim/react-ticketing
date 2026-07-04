@@ -63,7 +63,7 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
     if (typeof window === 'undefined' || layoutBounds.width === 0) return 0.5;
     const scaleX = window.innerWidth / layoutBounds.width;
     const scaleY = (window.innerHeight - 100) / layoutBounds.height;
-    let scale = Math.min(scaleX, scaleY) * 0.95;
+    const scale = Math.min(scaleX, scaleY) * 0.95;
     return Math.max(0.1, Math.min(scale, 1.5));
   }, [layoutBounds]);
 

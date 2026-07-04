@@ -311,7 +311,7 @@ export const SeatsProvider = ({ children }: { children: React.ReactNode }) => {
         const startX = Math.round((canvasCenterX - (blockWidth / 2)) / 10) * 10;
         const startY = Math.round((canvasCenterY - (blockHeight / 2)) / 10) * 10;
 
-        let newIds: string[] = [];
+        const newIds: string[] = [];
 
         console.log(`Generating block: ${rows}x${cols} at center`);
         for (let r = 0; r < rows; r++) {

@@ -25,3 +25,8 @@ export const toggleGoodieBag = async (id: string): Promise<Ticket> => {
     const res = await admin_api.post(`/admin_api/tickets/${id}/goodie-bag`);
     return res.data.data as Ticket;
 };
+
+export const markGoodieBagsClaimed = async (ids: string[]): Promise<Ticket[]> => {
+    const res = await admin_api.post(`/admin_api/tickets/goodie-bags/claim`, { ids });
+    return res.data.data as Ticket[];
+};

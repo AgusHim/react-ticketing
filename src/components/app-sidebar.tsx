@@ -5,7 +5,8 @@ import {
   IconChairDirector,
   IconTicket,
   IconTable,
-  IconCalendarEvent
+  IconCalendarEvent,
+  IconSettings
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -57,6 +58,11 @@ const data = {
       title: "Layout Kursi",
       url: "/seats",
       icon: IconLayout,
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: IconSettings,
     },
   ],
 }

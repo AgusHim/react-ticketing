@@ -15,5 +15,8 @@ export type Ticket = {
     event?: Event | null;
     booked_seat?: BookedSeat | null;
     goodie_bag_claimed?: boolean;
+    darisini_scan_status?: string;
+    darisini_scan_response?: string;
+    darisini_scanned_at?: string | null;
     category?: string;
 };

@@ -11,6 +11,7 @@ import TicketsPage from './components/pages/tickets'
 import TableBookedSeatPage from './components/pages/table-booked-seats'
 import VerifyTicketPage from './components/pages/verify-ticket'
 import BookingPage from './components/pages/booking'
+import SettingsPage from './components/pages/settings'
 
 import EventsPage from './components/pages/events'
 
@@ -34,6 +35,7 @@ function App() {
               <Route path="/seats-layout" element={<SeatsLayoutPage />} />
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/booked" element={<TableBookedSeatPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </AuthProvider>

@@ -38,7 +38,7 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
     const handleSearch = async (search: string) => {
         try {
             setSearch(search);
-            const ticket = await findTicketsByID(search,1,5);
+            const ticket = await findTicketsByID(search, 1, 20);
             setTickets(ticket);
         } catch (err) {
             toast.error(`Failed to fetch selected seats: ${err}`);

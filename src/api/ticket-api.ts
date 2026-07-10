@@ -13,7 +13,7 @@ export const findTicketsByID = async (search?: string, page?: number, per_page?:
         params: {
             search,
             "page": page ?? 1,
-            "limit": per_page ?? 5,
+            "limit": per_page ?? 20,
             event_id
         }
     },

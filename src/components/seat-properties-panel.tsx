@@ -60,7 +60,7 @@ export function SeatPropertiesPanel() {
 
     return (
         <div className="flex flex-col p-4 h-full overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
-            <h1 className="font-bold text-lg mb-2 text-white tracking-tight">Properties</h1>
+            <h1 className="mb-2 text-lg font-extrabold tracking-tight text-foreground">Properties</h1>
             <p className="text-[11px] text-emerald-400 mb-6 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 inline-block font-medium">
                 {selectedIds.length} kursi terpilih
             </p>
@@ -74,7 +74,7 @@ export function SeatPropertiesPanel() {
                         value={prefix}
                         onChange={(e) => setPrefix(e.target.value)}
                         placeholder="Cth: VIP-"
-                        className="bg-[#141414] border-white/[0.08] text-white rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50 h-9"
+                        className="h-10 text-xs"
                     />
                 </div>
 
@@ -85,7 +85,7 @@ export function SeatPropertiesPanel() {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         placeholder="Kategori Kursi"
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50 h-9"
+                        className="mt-1.5 h-10 text-xs"
                     />
                 </div>
 
@@ -97,7 +97,7 @@ export function SeatPropertiesPanel() {
                         value={rotation}
                         onChange={(e) => setRotation(parseFloat(e.target.value) || 0)}
                         placeholder="0"
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50 h-9"
+                        className="mt-1.5 h-10 text-xs"
                     />
                 </div>
 
@@ -113,7 +113,7 @@ export function SeatPropertiesPanel() {
                             type="text" 
                             value={color}
                             onChange={(e) => setColor(e.target.value)}
-                            className="bg-[#141414] border-white/[0.08] text-white font-mono uppercase rounded-xl text-xs focus-visible:ring-1 focus-visible:ring-emerald-500/50 h-9"
+                            className="h-10 text-xs font-mono uppercase"
                         />
                     </div>
                     
@@ -135,7 +135,7 @@ export function SeatPropertiesPanel() {
                 <div className="pt-5 mt-2 border-t border-white/[0.06] flex flex-col gap-2.5">
                     <Button 
                         onClick={handleApply} 
-                        className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-semibold h-9 shadow-lg shadow-emerald-500/20 transition-all"
+                        className="h-10 w-full bg-neo-yellow-solid text-xs"
                     >
                         Simpan Perubahan
                     </Button>

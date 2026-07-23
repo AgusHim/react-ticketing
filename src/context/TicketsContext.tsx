@@ -10,6 +10,7 @@ export type TicketsContextType = {
     search: string;
     setSearch: React.Dispatch<React.SetStateAction<string>>;
     handleSearch: (search: string) => void;
+    refreshTickets: () => Promise<void>;
 };
 
 export const TicketsContext = createContext<TicketsContextType | undefined>(undefined);

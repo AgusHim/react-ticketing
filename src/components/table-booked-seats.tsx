@@ -47,21 +47,21 @@ export function TableBookedSeats() {
     }, [search, bookedSeats]);
 
     return (
-        <>
-            <div className="flex flex-row justify-between items-center gap-5 mx-5">
+        <div className="space-y-5 px-5">
+            <div className="neo-surface-sm flex flex-col items-stretch justify-between gap-4 bg-neo-purple p-4 md:flex-row md:items-center">
                 <SelectShowBookedSeat/>
                 <div className="w-full flex flex-row items-center gap-2">
                     <IconSearch />
                     <Input
-                        className="w-1/2"
+                        className="w-full md:w-1/2"
                         placeholder="Cari berdasarkan no kursi, nama atau id tiket"
                         value={search}
                         onChange={handleChange}
                     />
                 </div>
             </div>
-            <Table className="m-5">
-                <TableCaption>A list of tickets</TableCaption>
+            <Table>
+                <TableCaption>Daftar kursi yang telah dipesan</TableCaption>
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[100px]">Seat Number</TableHead>
@@ -87,6 +87,6 @@ export function TableBookedSeats() {
                     ))}
                 </TableBody>
             </Table>
-        </>
+        </div>
     );
 }

@@ -71,11 +71,11 @@ export function ImportExcel() {
     };
 
     return (
-        <div className="mx-5">
-            <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div>
+            <div className="neo-surface bg-neo-mint p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <IconFileSpreadsheet className="h-6 w-6 text-green-600" />
-                    <h2 className="text-lg font-semibold">Import Data Peserta (Excel)</h2>
+                    <span className="neo-icon-tile size-10 bg-white"><IconFileSpreadsheet className="h-6 w-6 text-neo-mint-solid" /></span>
+                    <h2 className="text-xl font-extrabold">Import Data Peserta (Excel)</h2>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
                     Pilih event dan upload file <code>.xlsx</code> dari platform tiket. Sistem akan otomatis melewati data yang sudah ada (anti duplikasi).
@@ -85,7 +85,7 @@ export function ImportExcel() {
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium">Pilih Event</label>
                         <select
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                            className="flex h-10 w-full rounded-xl border-2 border-neo-border bg-white px-3 py-2 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-neo-purple-solid/30"
                             value={selectedEventId}
                             onChange={(e) => setSelectedEventId(e.target.value)}
                             disabled={isUploading}
@@ -102,7 +102,7 @@ export function ImportExcel() {
                             type="file"
                             accept=".xlsx,.xls"
                             onChange={handleFileChange}
-                            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                            className="block w-full cursor-pointer rounded-xl border-2 border-neo-border bg-white p-2 text-sm text-muted-foreground file:mr-4 file:rounded-lg file:border-2 file:border-neo-border file:bg-neo-yellow-solid file:px-4 file:py-2 file:text-sm file:font-bold"
                         />
                     </div>
 
@@ -129,7 +129,7 @@ export function ImportExcel() {
                     </div>
 
                     {result && (
-                        <div className="rounded-lg border p-4 bg-muted/50">
+                        <div className="rounded-xl border-2 border-neo-border bg-white p-4">
                             <h3 className="font-medium mb-2">Hasil Import:</h3>
                             <div className="flex gap-6">
                                 <div className="flex items-center gap-2 text-green-600">

@@ -139,7 +139,7 @@ export default function ChatDialog() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="neo-dots flex min-h-screen items-center justify-center">
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button className="gap-2">
@@ -147,8 +147,8 @@ export default function ChatDialog() {
             Open Chat
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+        <DialogContent className="flex h-[600px] flex-col bg-white p-0 sm:max-w-[500px]">
+          <DialogHeader className="border-b-2 border-neo-border bg-neo-purple px-6 py-4">
             <DialogTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
               Chat Support
@@ -239,7 +239,7 @@ export default function ChatDialog() {
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="border-t px-4 py-4">
+          <div className="border-t-2 border-neo-border bg-neo-yellow px-4 py-4">
             <div className="flex gap-2">
               <Input
                 placeholder="Type your message..."

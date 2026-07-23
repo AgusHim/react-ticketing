@@ -14,8 +14,8 @@ export default function SeatsNovirtualPage() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center min-h-screen">
-            <div className="flex flex-row justify-start">
+        <div className="neo-dots flex min-h-screen flex-col items-center gap-4 p-5">
+            <div className="neo-surface-sm flex flex-row justify-start gap-3 bg-neo-purple p-4">
                 <Input type="category" placeholder="Kategori Kursi" />
                 <Input type="color" placeholder="Warna Kursi" />
             </div>

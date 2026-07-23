@@ -2,6 +2,7 @@ import { useBookedSeats } from "@/context/BookedSeatsContext";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { FormBookedSeatDialog } from "./dialog/form-booked-seat-dialog";
 import { useState, useMemo } from "react";
+import { CELL_SIZE } from "@/config/config";
 
 import type { Ticket } from "@/types/ticket";
 
@@ -12,7 +13,7 @@ interface BookedSeatsProps {
   activeTicket?: Ticket | null;
 }
 
-export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
+export const BookedSeats: React.FC<BookedSeatsProps> = ({ seatSize = CELL_SIZE, activeTicket }) => {
   const {
     seats,
     authSelectedSeats,
@@ -35,13 +36,13 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
       if (seat.x === undefined || seat.y === undefined) {
         if (seat.position && seat.position.includes('-')) {
           const [r, c] = seat.position.split('-');
-          x = parseInt(c) * 50; // CELL_SIZE
-          y = parseInt(r) * 50;
+          x = parseInt(c) * seatSize;
+          y = parseInt(r) * seatSize;
         }
       }
 
-      const w = seat.width || 48; // CELL_SIZE - 2
-      const h = seat.height || 48;
+      const w = seat.width || seatSize - 2;
+      const h = seat.height || seatSize - 2;
 
       if (x < minX) minX = x;
       if (x + w > maxX) maxX = x + w;
@@ -57,7 +58,7 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
       width: maxX - minX + (padding * 2),
       height: maxY - minY + (padding * 2)
     };
-  }, [seats]);
+  }, [seats, seatSize]);
 
   const initialScale = useMemo(() => {
     if (typeof window === 'undefined' || layoutBounds.width === 0) return 0.5;
@@ -69,8 +70,7 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
 
   return (
     <div
-      className={`w-full h-full relative overflow-hidden rounded-xl`}
-      style={{ background: '#0a0a0a' }}
+      className="neo-dots relative h-full w-full overflow-hidden rounded-xl border-2 border-neo-border"
     >
       <TransformWrapper
         key={`transform-${layoutBounds.width}-${initialScale}`}
@@ -112,7 +112,7 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
                 (status === 'available' && !!activeTicket)
               );
 
-              const color = isStage ? (seatData.color || '#1e293b') : (status === 'mine' ? '#4ade80' : status === 'locked' ? '#eab308' : status === 'booked' ? '#64748b' : (seatData.color || '#3b82f6'));
+              const color = isStage ? (seatData.color || '#fdecc8') : (status === 'mine' ? '#f5c518' : status === 'locked' ? '#e6e3fb' : status === 'booked' ? '#9ca3af' : (seatData.color || '#dcefe6'));
 
               let x = seatData.x ?? 0;
               let y = seatData.y ?? 0;
@@ -120,16 +120,16 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
               if (seatData.x === undefined || seatData.y === undefined) {
                 if (seatData.position && seatData.position.includes('-')) {
                   const [r, c] = seatData.position.split('-');
-                  x = parseInt(c) * 50;
-                  y = parseInt(r) * 50;
+                  x = parseInt(c) * seatSize;
+                  y = parseInt(r) * seatSize;
                 }
               }
 
               x -= layoutBounds.minX;
               y -= layoutBounds.minY;
 
-              const seatWidth = seatData.width || 48;
-              const seatHeight = seatData.height || 48;
+              const seatWidth = seatData.width || seatSize - 2;
+              const seatHeight = seatData.height || seatSize - 2;
               const rotation = seatData.rotation ?? 0;
 
               return (
@@ -142,8 +142,9 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
                     width: seatWidth,
                     height: seatHeight,
                     backgroundColor: color,
-                    border: status === 'mine' ? '2px solid #4ade80' : '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: isStage ? '8px' : '4px',
+                    border: status === 'mine' ? '3px solid #1a1a1a' : '2px solid #1a1a1a',
+                    borderRadius: isStage ? '12px' : '7px',
+                    boxShadow: status === 'mine' ? '4px 4px 0 #1a1a1a' : '2px 2px 0 #1a1a1a',
                     boxSizing: 'border-box',
                     cursor: isClickable ? 'pointer' : (isStage || status === 'booked' || status === 'mine' ? 'not-allowed' : 'pointer'), // Show pointer to allow clicking and showing toast
                     opacity: status === 'booked' ? 0.7 : (!isAllowed ? 0.2 : 1),
@@ -183,13 +184,13 @@ export const BookedSeats: React.FC<BookedSeatsProps> = ({ activeTicket }) => {
                 >
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     {isStage ? (
-                      <p className="text-xl font-bold text-white tracking-widest">{seatData.name || 'STAGE'}</p>
+                      <p className="text-2xl font-bold text-white tracking-widest">{seatData.name || 'STAGE'}</p>
                     ) : (
                       <>
-                        <p className="text-[12px] font-bold text-white">
+                        <p className="text-[15px] font-bold text-white">
                           {status === 'booked' ? '✕' : status === 'locked' ? '🔒' : seatData.name}
                         </p>
-                        {status === 'booked' ? <p className="text-[12px] text-white font-bold">{seatData.name}</p> : <p className="text-[8px] text-white/80 font-bold">{seatData.category}</p>}
+                        {status === 'booked' ? <p className="text-[15px] text-white/80 font-bold">{seatData.name}</p> : <p className="text-[10px] text-white/80">{seatData.category}</p>}
                         {seatData.gender && seatData.gender !== 'both' && (
                           <div className={`absolute top-0 right-0 w-3 h-3 rounded-bl-sm flex items-center justify-center text-[7px] font-bold ${seatData.gender === 'male' ? 'bg-blue-500 text-white' : 'bg-pink-500 text-white'
                             }`}>

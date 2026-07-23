@@ -157,12 +157,14 @@ async function mockBookingBackend(
     }
 
     if (request.method() === 'POST' && path === '/api/seats/lock') {
-      const body = request.postDataJSON() as { seat_id: string };
+      const body = request.postDataJSON() as { seat_id: string; action?: 'lock' | 'unlock' };
       const requester = ticketFromAuthorization(request.headers(), ticket);
       const existing = state.lockedSeats.get(body.seat_id);
 
-      if (existing?.admin_id === requester.ticket_id) {
-        state.lockedSeats.delete(body.seat_id);
+      if (body.action === 'unlock') {
+        if (existing?.admin_id === requester.ticket_id) {
+          state.lockedSeats.delete(body.seat_id);
+        }
         await route.fulfill({ json: { status: 'unlocked' } });
         return;
       }
@@ -229,7 +231,36 @@ async function uploadTicket(page: Page) {
   });
 }
 
-test('upload tiket, lock kursi tetap setelah refresh, timeout melepas lock, lalu invoice benar', async ({ page }) => {
+test('klik ulang kursi milik sendiri melepas lock', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-chrome', 'Flow ini memverifikasi action bar khusus mobile.');
+  const ticket = {
+    ticket_id: 'ticket-unlock',
+    ticket_code: 'TCK-UNLOCK',
+    name: 'Budi Santoso',
+    gender: 'male',
+    category: 'VIP',
+  };
+  const state = {
+    lockedSeats: new Map<string, LockedSeat>(),
+    bookedSeats: [],
+    expireLocks: false,
+  };
+
+  await mockBookingBackend(page, ticket, state);
+  await uploadTicket(page);
+
+  const seat = page.getByTestId(`seat-${seatId}`);
+  await seat.click();
+  await expect(seat).toHaveAttribute('data-seat-status', 'mine');
+
+  await seat.click();
+  await expect(seat).toHaveAttribute('data-seat-status', 'available');
+  await expect(page.getByTestId('mobile-confirm-button')).toHaveCount(0);
+  expect(state.lockedSeats.has(seatId)).toBe(false);
+});
+
+test('upload tiket, lock kursi tetap setelah refresh, timeout melepas lock, lalu invoice benar', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-chrome', 'Flow ini memverifikasi action bar khusus mobile.');
   const ticket = {
     ticket_id: 'ticket-1',
     ticket_code: 'TCK-001',

@@ -39,48 +39,36 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Selamat Datang!</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Masukkan email dan password untuk melanjutkan.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="font-bold">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="nama@contoh.com"
                   onChange={handleChange}
                   required
                 />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+                  <Label htmlFor="password" className="font-bold">Password</Label>
                 </div>
                 <Input id="password" name="password" type="password" required onChange={handleChange} />
               </div>
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full">
-                  Login
+                  Masuk
                 </Button>
               </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
-                Sign up
-              </a>
             </div>
           </form>
         </CardContent>

@@ -1,5 +1,5 @@
 // context/TicketsProvider.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TicketsContext } from './TicketsContext';
 import type { Ticket } from '@/types/ticket';
 import { findTicketsByID } from '@/api/ticket-api';
@@ -17,32 +17,30 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
     });
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [search, setSearch] = useState<string>("");
+    const requestSeqRef = useRef(0);
+
+    const refreshTickets = useCallback(async () => {
+        const requestSeq = requestSeqRef.current + 1;
+        requestSeqRef.current = requestSeq;
+
+        try {
+            const tickets = await findTicketsByID(search, 1, 20);
+            if (requestSeq === requestSeqRef.current) {
+                setTickets(tickets);
+            }
+        } catch (err) {
+            if (requestSeq === requestSeqRef.current) {
+                toast.error(`Failed to fetch tickets: ${err}`);
+            }
+        }
+    }, [search]);
 
     useEffect(() => {
-        const fetchTickets = async () => {
-            const fetchData = async () => {
-                try {
-                    const tickets = await findTicketsByID(search);
-                    setTickets(tickets);
-                } catch (err) {
-                    toast.error(`Failed to fetch selected seats: ${err}`);
-                }
-            };
+        void refreshTickets();
+    }, [refreshTickets]);
 
-            fetchData();
-        };
-
-        fetchTickets();
-    }, [setTickets, search]);
-
-    const handleSearch = async (search: string) => {
-        try {
-            setSearch(search);
-            const ticket = await findTicketsByID(search, 1, 20);
-            setTickets(ticket);
-        } catch (err) {
-            toast.error(`Failed to fetch selected seats: ${err}`);
-        }
+    const handleSearch = (search: string) => {
+        setSearch(search);
     }
 
     return (
@@ -55,6 +53,7 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
                 search,
                 setSearch,
                 handleSearch,
+                refreshTickets,
             }}
         >
             {children}

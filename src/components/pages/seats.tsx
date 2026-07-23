@@ -31,10 +31,10 @@ export default function SeatsPage() {
                     <SiteHeader title="Seats Layout" />
                     <div className="flex flex-1 flex-col">
                         <div className="@container/main flex flex-1 flex-col gap-2">
-                            <div className="flex flex-col">
-                                <div className="flex flex-row gap-2 m-4">
+                            <div className="flex flex-col gap-4 p-4">
+                                <div className="neo-surface-sm flex flex-col gap-3 bg-neo-purple p-4 sm:flex-row sm:items-center">
                                     <SelectShowSeat />
-                                    <div className="max-w-1 m-5"><Button onClick={() => navigate("/seats-layout")}><span><IconLayout /></span>Draw Layout</Button></div>
+                                    <Button onClick={() => navigate("/seats-layout")}><IconLayout /> Draw Layout</Button>
                                 </div>
                                 <SeatCountByCateogry />
                                 <SeatVirtualizerFixed cols={COLS} rows={ROWS} seatSize={CELL_SIZE} />

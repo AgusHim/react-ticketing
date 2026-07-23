@@ -334,7 +334,9 @@ export default function BookingPage() {
             toast.error('Sesi tiket tidak valid. Verifikasi ulang tiket Anda.');
             return;
         }
-        if (activeSession && seat.gender && seat.gender !== 'both') {
+        const isUnlocking = myLockedSeatId === seat.id;
+
+        if (!isUnlocking && activeSession && seat.gender && seat.gender !== 'both') {
             if (!activeSession.gender) {
                 toast.error(`Maaf, kursi ini khusus ${seat.gender.toLowerCase() === 'male' ? 'pria' : 'wanita'}, tiket Anda tidak memiliki informasi gender.`);
                 return;
@@ -345,7 +347,7 @@ export default function BookingPage() {
             }
         }
 
-        if (activeSession && activeSession.category && seat.category) {
+        if (!isUnlocking && activeSession && activeSession.category && seat.category) {
             if (activeSession.category.toLowerCase() !== seat.category.toLowerCase() && seat.category !== 'STAGE') {
                 toast.error(`Maaf, kursi ini khusus kategori ${seat.category.toUpperCase()}, sedangkan tiket Anda kategori ${activeSession.category.toUpperCase()}.`);
                 return;
@@ -364,7 +366,12 @@ export default function BookingPage() {
 
         setIsLocking(true);
         try {
-            const res = await lockSeatWarKursi(eventId, seat.id!, activeSession.token);
+            const res = await lockSeatWarKursi(
+                eventId,
+                seat.id!,
+                activeSession.token,
+                isUnlocking ? 'unlock' : 'lock',
+            );
             if (res.status === 'locked') {
                 // Optimistic UI update
                 setLockedSeats(prev => {
@@ -409,11 +416,11 @@ export default function BookingPage() {
 
     const getSeatColor = (status: string, originalColor: string) => {
         switch (status) {
-            case 'booked': return '#6b7280'; // gray
-            case 'session_booked': return '#F54927'; // red-orange
-            case 'mine': return '#16a34a'; // green
-            case 'session_locked': return '#16a34a'; // green
-            case 'locked': return '#eab308'; // yellow
+            case 'booked': return '#9ca3af';
+            case 'session_booked': return '#dcefe6';
+            case 'mine': return '#f5c518';
+            case 'session_locked': return '#f5c518';
+            case 'locked': return '#e6e3fb';
             default: return originalColor;
         }
     };
@@ -490,9 +497,9 @@ export default function BookingPage() {
             </div>
             <div className="mt-4 space-y-3 pb-2">
                 <h3 className="text-sm font-semibold text-white">Langkah-langkah:</h3>
-                <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-2">
-                    <li>Siapkan file e-ticket (PDF) yang sudah Anda download dari <a href="https://www.darisini.com/orders" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">darisini.com</a></li>
-                    <li>Klik tombol <strong className="text-neutral-200">Tambah Tiket</strong> di bagian bawah layar.</li>
+                <ol className="list-decimal list-inside text-xs text-black-400 space-y-2">
+                    <li>Siapkan file e-ticket (PDF) yang sudah Anda download dari <a href="https://www.darisini.com/orders" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline font-extrabold">darisini.com</a></li>
+                    <li>Klik tombol <strong className="text-black-200">Tambah Tiket</strong> di bagian bawah layar.</li>
                     <li>Upload file PDF tiket Anda ke dalam sesi.</li>
                     <li>Pilih tiket Anda, lalu klik kursi kosong (bewarna terang) di peta.</li>
                     <li>Jika sudah selesai memilih kursi, klik <strong className="text-emerald-400">Konfirmasi</strong>.</li>
@@ -505,34 +512,34 @@ export default function BookingPage() {
     const sidebarContent = (
         <>
             {/* Event Header with Image */}
-            <div className="relative h-36 md:h-52 shrink-0 overflow-hidden">
+            <div className="relative h-36 shrink-0 overflow-hidden border-b-2 border-neo-border md:h-52">
                 {eventData?.image_url ? (
                     <img src={eventData.image_url} alt={eventData?.name} className="w-full h-full object-cover" />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${eventData?.color || '#e50914'}33, #0a0a0a)` }}>
-                        <IconTicket className="h-12 w-12 text-white/20" />
+                    <div className="flex h-full w-full items-center justify-center bg-neo-purple">
+                        <IconTicket className="h-12 w-12 text-foreground/30" />
                     </div>
                 )}
                 {/* Gradient overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
+                <div className="absolute inset-0 bg-white/5" />
 
                 {/* Back button - desktop only (mobile has its own) */}
-                <a href="/" className="hidden md:flex absolute top-4 left-4 items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-all duration-200 active:scale-95">
+                <a href="/" className="neo-surface-sm absolute top-4 left-4 hidden h-9 w-9 items-center justify-center bg-white text-foreground transition-colors hover:bg-neo-yellow md:flex">
                     <IconArrowLeft className="h-4 w-4" />
                 </a>
 
                 {/* Live badge */}
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full">
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 rounded-lg border-2 border-neo-border bg-neo-mint px-3 py-1.5">
                     <div className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                     </div>
-                    <span className="text-[10px] font-semibold text-white tracking-wide uppercase">Live</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wide text-foreground">Live</span>
                 </div>
 
                 {/* Event title overlaid on image */}
-                <div className="absolute bottom-4 left-4 right-4">
-                    <h2 className="text-lg md:text-xl font-bold text-white leading-snug line-clamp-2">{eventData?.name || 'Memuat Event...'}</h2>
+                <div className="absolute right-4 bottom-4 left-4 rounded-xl border-2 border-neo-border bg-white px-3 py-2 shadow-[3px_3px_0_#1a1a1a]">
+                    <h2 className="line-clamp-2 text-lg font-extrabold leading-snug text-foreground md:text-xl">{eventData?.name || 'Memuat Event...'}</h2>
                 </div>
             </div>
 
@@ -566,21 +573,21 @@ export default function BookingPage() {
                 </div>
 
                 {/* Quick Actions - horizontal on mobile */}
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="mb-4 grid grid-cols-2 gap-2">
                     <a href="https://wa.me/6288227301613" target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] py-2.5 rounded-xl transition-all duration-200 font-medium text-xs active:scale-[0.97]">
+                        className="flex items-center justify-center gap-2 rounded-xl border-2 border-neo-border bg-neo-mint py-2.5 text-xs font-bold text-neo-mint-solid transition-colors hover:bg-white">
                         <IconBrandWhatsapp className="h-4 w-4" />
                         <span>Support</span>
                     </a>
 
-                    <button onClick={() => setShowTutorial(true)} className="flex items-center justify-center gap-2 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 text-[#FF4444] py-2.5 rounded-xl transition-all duration-200 font-medium text-xs w-full active:scale-[0.97]">
+                    <button onClick={() => setShowTutorial(true)} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-neo-border bg-neo-pink py-2.5 text-xs font-bold text-foreground transition-colors hover:bg-white">
                         <IconBrandYoutube className="h-4 w-4" />
                         <span>Tutorial</span>
                     </button>
                 </div>
 
                 {hasBookedSeats && (
-                    <button data-testid="desktop-invoice-button" onClick={() => setShowInvoice(true)} className="mb-4 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-xl transition-all font-semibold text-xs w-full shadow-lg shadow-emerald-500/20 active:scale-[0.97]">
+                    <button data-testid="desktop-invoice-button" onClick={() => setShowInvoice(true)} className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-neo-border bg-neo-mint-solid py-2.5 text-xs font-extrabold text-white shadow-[3px_3px_0_#1a1a1a] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none">
                         <IconReceipt className="h-4 w-4" />
                         <span>Lihat Invoice</span>
                     </button>
@@ -611,9 +618,9 @@ export default function BookingPage() {
                                 <div key={t.ticket_id}
                                     data-testid={`ticket-session-${t.ticket_id}`}
                                     onClick={() => setActiveTicketId(t.ticket_id)}
-                                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98] ${isSelected
-                                        ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
-                                        : 'bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]'
+                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-neo-border p-3 transition-all active:translate-x-0.5 active:translate-y-0.5 ${isSelected
+                                        ? 'bg-neo-yellow-solid shadow-[3px_3px_0_#1a1a1a]'
+                                        : 'bg-white hover:bg-neo-yellow'
                                         }`}
                                 >
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -664,7 +671,7 @@ export default function BookingPage() {
                             );
                         })}
                         {ticketSessions.length === 0 && (
-                            <div className="text-center py-8 rounded-xl border border-dashed border-white/[0.07] bg-white/[0.02]">
+                            <div className="rounded-xl border-2 border-dashed border-neo-border bg-neo-purple py-8 text-center">
                                 <IconTicket className="h-8 w-8 text-neutral-700 mx-auto mb-2" />
                                 <p className="text-xs text-neutral-600">Belum ada tiket di sesi ini</p>
                             </div>
@@ -676,26 +683,24 @@ export default function BookingPage() {
     );
 
     return (
-        <div className="h-[100dvh] flex flex-col md:flex-row overflow-hidden" style={{ background: '#0a0a0a' }}>
+        <div className="neo-workspace h-[100dvh] flex flex-col md:flex-row overflow-hidden bg-bg-app">
 
             {/* ═══════════════ DESKTOP SIDEBAR ═══════════════ */}
-            <div className="hidden md:flex w-80 lg:w-[22rem] flex-col shrink-0 z-10 h-screen border-r border-white/[0.06]"
-                style={{ background: 'linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%)' }}>
+            <div className="z-10 hidden h-screen w-80 shrink-0 flex-col border-r-2 border-neo-border bg-bg-sidebar md:flex lg:w-[22rem]">
                 {sidebarContent}
             </div>
 
             {/* ═══════════════ MAIN SEAT MAP AREA ═══════════════ */}
-            <div className="flex-1 flex flex-col overflow-hidden relative" style={{ background: '#0a0a0a' }}>
+            <div className="neo-dots relative flex flex-1 flex-col overflow-hidden">
 
                 {/* ── Mobile Top Bar ── */}
-                <div className="flex md:hidden items-center justify-between px-4 py-3 shrink-0 z-20 border-b border-white/[0.06]"
-                    style={{ background: '#0f0f0f' }}>
+                <div className="z-20 flex shrink-0 items-center justify-between border-b-2 border-neo-border bg-bg-sidebar px-4 py-3 md:hidden">
                     <div className="flex items-center gap-3">
-                        <a href="/" className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-white transition-colors active:scale-95">
+                        <a href="/" className="neo-surface-sm flex h-9 w-9 items-center justify-center bg-white text-foreground transition-colors hover:bg-neo-yellow">
                             <IconArrowLeft className="h-4 w-4" />
                         </a>
                         <div className="min-w-0">
-                            <h1 className="text-sm font-semibold text-white truncate max-w-[200px]">{eventData?.name || 'Memuat...'}</h1>
+                            <h1 className="max-w-[200px] truncate text-sm font-extrabold text-foreground">{eventData?.name || 'Memuat...'}</h1>
                             <div className="flex items-center gap-1.5">
                                 <div className="relative flex h-1.5 w-1.5">
                                     {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
@@ -721,7 +726,7 @@ export default function BookingPage() {
                         {/* Legend */}
                         <button
                             onClick={() => setShowLegend(!showLegend)}
-                            className="w-9 h-9 rounded-xl bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-neutral-400 transition-colors active:scale-95"
+                            className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-neo-border bg-white text-foreground transition-colors hover:bg-neo-yellow"
                         >
                             <IconListDetails className="h-4 w-4" />
                         </button>
@@ -730,8 +735,7 @@ export default function BookingPage() {
 
                 {/* ── Mobile Legend Dropdown ── */}
                 {showLegend && (
-                    <div className="flex md:hidden flex-wrap gap-x-4 gap-y-1.5 px-4 py-2.5 border-b border-white/[0.06] z-20 animate-in slide-in-from-top-2 duration-200"
-                        style={{ background: '#0f0f0f' }}>
+                    <div className="flex md:hidden flex-wrap gap-x-4 gap-y-1.5 px-4 py-2.5 border-b border-white/[0.06] z-20 animate-in slide-in-from-top-2 duration-200 bg-bg-sidebar ">
                         {[
                             { color: 'bg-blue-500', label: 'Tersedia', count: seats.filter(s => getSeatStatus(s.id!) === 'available' && s.category !== 'STAGE').length },
                             { color: 'bg-emerald-500', label: 'Pilihan', count: myLockedSeatId ? 1 : 0 },
@@ -750,8 +754,8 @@ export default function BookingPage() {
 
 
                 {/* ── Desktop Connection Status ── */}
-                <div className="hidden md:flex items-center justify-end px-4 py-2 shrink-0 z-20 border-b border-white/[0.04]" style={{ background: '#0d0d0d' }}>
-                    <div className="flex items-center gap-2 bg-white/[0.04] px-3 py-1.5 rounded-full">
+                <div className="hidden md:flex items-center justify-end px-4 py-2 shrink-0 z-20">
+                    <div className="flex items-center gap-2 bg-[#F2EDD7] px-3 py-1.5 rounded-full">
                         <div className="relative flex h-2 w-2">
                             {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
                             <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-400' : 'bg-red-500'}`}></span>
@@ -764,7 +768,7 @@ export default function BookingPage() {
 
                 {/* ── Desktop Legend ── */}
                 <div className="hidden md:block absolute bottom-6 right-6 z-40">
-                    <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/[0.08] w-44">
+                    <div className="neo-surface-sm w-48 bg-white p-4">
                         <h3 className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-3">Keterangan</h3>
                         <div className="space-y-2.5 text-[11px]">
                             {[
@@ -787,8 +791,7 @@ export default function BookingPage() {
 
                 {/* ── Countdown Bar (desktop) ── */}
                 {showCountdownBar && (
-                    <div className="hidden md:flex px-4 py-2.5 items-center justify-between z-20 shrink-0 border-b border-emerald-500/20"
-                        style={{ background: 'linear-gradient(90deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03))' }}>
+                    <div className="z-20 hidden shrink-0 items-center justify-between border-b-2 border-neo-border bg-neo-yellow px-4 py-2.5 md:flex">
                         <div className="flex items-center gap-3">
                             <span className="text-emerald-400 text-sm font-medium">
                                 ⏱ <strong className="font-mono">{formatTime(maxLockedCountdown)}</strong>
@@ -798,7 +801,7 @@ export default function BookingPage() {
                             </span>
                         </div>
                         <button
-                            className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-1.5 rounded-lg border-2 border-neo-border bg-neo-mint-solid px-4 py-2 text-xs font-extrabold text-white shadow-[3px_3px_0_#1a1a1a] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-50"
                             onClick={() => setShowConfirmDialog(true)}
                             disabled={isLocking}
                         >
@@ -865,19 +868,19 @@ export default function BookingPage() {
                     <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-md bg-[#141414] border-neutral-800 text-neutral-200 rounded-2xl max-h-[85vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle className="text-white text-base">Invoice Booking</DialogTitle>
-                            <DialogDescription className="text-neutral-500 text-sm">
+                            <DialogDescription className="text-black-500 text-xs">
                                 Tunjukkan halaman ini kepada panitia saat penukaran goodiebag dan gelang kursi.
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="mt-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-4">
+                        <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-4">
                             {/* Event Info */}
-                            <div className="text-center pb-4 border-b border-white/[0.08]">
-                                <h3 className="text-lg font-bold text-emerald-400">{eventData?.name}</h3>
-                                <p className="text-xs text-neutral-400 mt-1">
+                            <div className="text-center border-b border-white/[0.08]">
+                                <h3 className="text-xl font-bold text-emerald-600">{eventData?.name}</h3>
+                                <p className="text-xs text-black-400 mt-1">
                                     {eventData ? new Date(eventData.date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
                                 </p>
-                                <p className="text-xs text-neutral-400 mt-1">{eventData?.location || '-'}</p>
+                                <p className="text-xs text-black-400 mt-1">{eventData?.location || '-'}</p>
                             </div>
 
                             {/* Tickets List */}
@@ -886,19 +889,19 @@ export default function BookingPage() {
                                     const bookedSeatItem = bookedSeatsData.find(b => b.ticket_id === t.ticket_id);
                                     const seatName = bookedSeatItem?.seat?.name || seats.find(s => s.id === bookedSeatItem?.seat_id)?.name;
                                     return (
-                                        <div key={t.ticket_id} className="flex flex-col gap-1.5 p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+                                        <div key={t.ticket_id} className="flex flex-col gap-1.5 p-3 rounded-lg bg-neo-yellow-solid border-2 border-black shadow-[3px_3px_0_#1A191A]">
                                             <div className="flex justify-between items-start">
                                                 <div>
                                                     <p className="text-sm font-semibold text-white">{t.name}</p>
-                                                    <p className="text-[10px] text-neutral-500 font-mono mt-0.5">{t.ticket_code || t.ticket_id}</p>
+                                                    <p className="text-sm text-black-500 font-mono mt-0.5">{t.ticket_code || t.ticket_id}</p>
                                                 </div>
-                                                <div className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md text-xs font-bold border border-emerald-500/30">
+                                                <div className="bg-white/60 text-emerald-600 px-2 py-1 rounded-md text-xs font-bold border border-black">
                                                     Kursi: {seatName || '-'}
                                                 </div>
                                             </div>
                                             <div className="flex gap-2 mt-1">
-                                                {t.gender && <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-neutral-300 uppercase">{t.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</span>}
-                                                {t.category && <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-neutral-300 uppercase">{t.category}</span>}
+                                                {t.gender && <span className="text-[9px] bg-white/60 px-1.5 py-0.5 rounded text-black-300 uppercase">{t.gender === 'male' ? 'Ikhwan' : 'Akhwat'}</span>}
+                                                {t.category && <span className="text-[9px] bg-white/60 px-1.5 py-0.5 rounded text-black-300 uppercase">{t.category}</span>}
                                             </div>
                                         </div>
                                     );
@@ -906,7 +909,7 @@ export default function BookingPage() {
                             </div>
 
                             <div className="pt-2 text-center">
-                                <p className="text-[10px] text-neutral-500 italic">Terima kasih telah melakukan pemesanan kursi.</p>
+                                <p className="text-xs text-black-500 italic">Terima kasih telah melakukan pemesanan kursi.</p>
                             </div>
                         </div>
                     </DialogContent>
@@ -1002,8 +1005,8 @@ export default function BookingPage() {
                                     </button>
                                 </VerifyTicketDialog>
                                 <p className="text-[11px] text-neutral-500 mt-3">
-                                    {ticketSessions.length > 0 
-                                        ? `Anda sudah menambahkan ${ticketSessions.length} tiket.` 
+                                    {ticketSessions.length > 0
+                                        ? `Anda sudah menambahkan ${ticketSessions.length} tiket.`
                                         : 'Tambahkan tiket sekarang agar bisa langsung pilih kursi saat war dimulai.'}
                                 </p>
                             </div>
@@ -1055,7 +1058,7 @@ export default function BookingPage() {
                                         const isAllowed = isAllowedByGender && isAllowedByCategory;
                                         const status = isStage ? 'stage' : getSeatStatus(seatData.id!);
                                         const isClickable = !isStage && isAllowed && (status === 'available' || status === 'mine');
-                                        const color = isStage ? (seatData.color || '#1e293b') : getSeatColor(status, seatData.color || '#3b82f6');
+                                        const color = isStage ? (seatData.color || '#ffffff') : getSeatColor(status, seatData.color || '#3b82f6');
 
                                         // Use coordinate data or fallback to grid position if x/y are missing
                                         let x = seatData.x ?? 0;
@@ -1089,8 +1092,9 @@ export default function BookingPage() {
                                                     width: seatWidth,
                                                     height: seatHeight,
                                                     backgroundColor: color,
-                                                    border: status === 'mine' ? '2px solid #4ade80' : status === 'session_booked' ? '2px solid #60a5fa' : status === 'session_locked' ? '2px solid #4ade80' : '1px solid rgba(255,255,255,0.08)',
-                                                    borderRadius: isStage ? '8px' : '4px',
+                                                    border: status === 'mine' || status === 'session_booked' || status === 'session_locked' ? '3px solid #1a1a1a' : '2px solid #1a1a1a',
+                                                    borderRadius: isStage ? '12px' : '7px',
+                                                    boxShadow: status === 'mine' ? '4px 4px 0 #1a1a1a' : '2px 2px 0 #1a1a1a',
                                                     boxSizing: 'border-box',
                                                     cursor: isClickable ? 'pointer' : (isStage ? 'default' : 'not-allowed'),
                                                     opacity: status === 'booked' ? 0.5 : status === 'session_booked' ? 0.9 : (!isAllowed ? 0.2 : 1),
@@ -1102,15 +1106,15 @@ export default function BookingPage() {
                                             >
                                                 <div className="flex flex-col items-center justify-center h-full text-center">
                                                     {isStage ? (
-                                                        <p className="text-2xl font-bold text-white tracking-widest">{seatData.name || 'STAGE'}</p>
+                                                        <p className="text-2xl font-bold text-white/100 tracking-widest">{seatData.name || 'STAGE'}</p>
                                                     ) : (
                                                         <>
-                                                            <p className="text-[15px] font-bold text-white">
+                                                            <p className="text-[15px] font-bold text-black/100">
                                                                 {status === 'booked' ? '✕' : status === 'session_booked' ? '✓' : status === 'locked' ? '🔒' : status === 'session_locked' ? '🔒' : seatData.name}
                                                             </p>
-                                                            {status == 'session_booked' ? <p className="text-[15px] text-white/80 font-bold">{seatData.name}</p> : <p className="text-[10px] text-white/80">{seatData.category}</p>}
+                                                            {status == 'session_booked' ? <p className="text-[15px] text-black/100 font-bold">{seatData.name}</p> : <p className="text-[12px] text-black/100">{seatData.category}</p>}
                                                             {seatData.gender && seatData.gender !== 'both' && (
-                                                                <div className={`absolute top-0 right-0 w-3 h-3 rounded-bl-sm flex items-center justify-center text-[7px] font-bold ${seatData.gender === 'male' ? 'bg-blue-500 text-white' : 'bg-pink-500 text-white'
+                                                                <div className={`absolute top-0 right-0 w-4 h-4 rounded-bl-sm flex items-center justify-center text-[10px] font-bold ${seatData.gender === 'male' ? 'bg-blue-500 text-white' : 'bg-pink-500 text-white'
                                                                     }`}>
                                                                     {seatData.gender === 'male' ? 'L' : 'P'}
                                                                 </div>
@@ -1128,7 +1132,7 @@ export default function BookingPage() {
                 </div>
 
                 {/* ═══════════════ MOBILE BOTTOM TICKET BAR ═══════════════ */}
-                <div className="md:hidden shrink-0 z-30 flex flex-col bg-[#0f0f0f] border-t border-white/[0.06]">
+                <div className="z-30 flex shrink-0 flex-col border-t-2 border-neo-border bg-bg-sidebar md:hidden">
                     <div className="px-4 py-3 flex gap-3 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
                         {ticketSessions.length === 0 && (
                             <span className="text-[11px] text-neutral-500 whitespace-nowrap italic">Belum ada tiket di sesi ini.</span>
@@ -1144,11 +1148,11 @@ export default function BookingPage() {
                                 (lockedSeatItem ? seats.find(s => s.id === lockedSeatItem.seat_id)?.name : null);
 
                             return (
-                                <div key={t.ticket_id} data-testid={`ticket-session-${t.ticket_id}`} onClick={() => setActiveTicketId(t.ticket_id)} className={`shrink-0 flex items-center h-14 rounded-xl border pl-3 pr-2 gap-3 cursor-pointer transition-all ${isActive ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-white/[0.05] border-white/[0.1] hover:bg-white/[0.08]'}`}>
-                                    <div className="flex flex-col justify-center min-w-[100px] max-w-[140px]">
-                                        <p className={`text-[13px] font-semibold truncate ${isActive ? 'text-emerald-400' : 'text-neutral-200'}`}>{t.ticket_code || t.ticket_id}</p>
-                                        <div className="flex items-center gap-1.5 mt-0.5">
-                                            <span className="text-[10px] text-neutral-500 truncate max-w-[80px]">{t.name}</span>
+                                <div key={t.ticket_id} data-testid={`ticket-session-${t.ticket_id}`} onClick={() => setActiveTicketId(t.ticket_id)} className={`flex shrink-0 cursor-pointer items-center gap-3 rounded-xl border-2 border-neo-border pl-3 pr-2 transition-all ${isActive ? 'bg-neo-yellow shadow-[3px_3px_0_#1a1a1a]' : 'bg-white hover:bg-neo-yellow'}`}>
+                                    <div className="flex flex-col justify-center min-w-[100px] max-w-[140px] my-1">
+                                        <p className={`text-[12px] font-bold truncate ${isActive ? 'text-emerald-400' : 'text-neutral-200'}`}>{t.ticket_code || t.ticket_id}</p>
+                                        <span className="text-[12px] text-black-500 truncate max-w-[100px]">{t.name}</span>
+                                        <div className="flex items-center gap-1.5 my-0.5">
                                             {t.gender && <span className={`text-[9px] px-1 rounded uppercase font-bold ${t.gender.toLowerCase() === 'male' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400'}`}>{t.gender === 'male' ? 'L' : 'P'}</span>}
                                             {t.category && <span className={`text-[9px] px-1 rounded uppercase font-bold ${t.category.toLowerCase() === 'platinum' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-pink-500/20 text-pink-400'}`}>{t.category}</span>}
                                         </div>
@@ -1177,9 +1181,9 @@ export default function BookingPage() {
                         })}
                     </div>
 
-                    <div className="px-4 py-2.5 border-t border-white/[0.06] flex flex-col gap-2.5 bg-white/[0.02]">
+                    <div className="flex flex-col gap-2.5 border-t-2 border-neo-border bg-[#f3f1f5] px-4 py-2.5">
                         <VerifyTicketDialog eventId={eventId} onVerified={handleAddTickets}>
-                            <button data-testid="mobile-add-ticket-button" className="flex w-full items-center justify-center gap-2 h-11 rounded-xl border border-dashed border-white/20 hover:border-white/40 bg-white/[0.03] hover:bg-white/[0.06] transition-all text-neutral-400 hover:text-white">
+                            <button data-testid="mobile-add-ticket-button" className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neo-border bg-white font-bold text-foreground transition-colors hover:bg-neo-purple">
                                 <IconPlus className="h-4 w-4" />
                                 <span className="text-sm font-semibold">Tambah Tiket</span>
                             </button>
@@ -1191,12 +1195,12 @@ export default function BookingPage() {
                                     <span className="text-emerald-400 text-sm font-medium">⏱ <strong className="font-mono">{formatTime(maxLockedCountdown)}</strong></span>
                                     <span className="text-[12px] text-neutral-400"><strong className="text-white">{allLockedPairs.length}</strong> kursi</span>
                                 </div>
-                                <button data-testid="mobile-confirm-button" className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20" onClick={() => setShowConfirmDialog(true)}>
+                                <button data-testid="mobile-confirm-button" className="flex items-center gap-1.5 rounded-xl border-2 border-neo-border bg-neo-mint-solid px-5 py-2.5 text-sm font-extrabold text-white shadow-[3px_3px_0_#1a1a1a] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none" onClick={() => setShowConfirmDialog(true)}>
                                     <IconCheck className="h-4 w-4" /> Konfirmasi
                                 </button>
                             </div>
                         ) : hasBookedSeats ? (
-                            <button data-testid="mobile-invoice-button" onClick={() => setShowInvoice(true)} className="mt-0.5 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 w-full py-2.5 text-sm font-semibold text-white active:scale-95 transition-all shadow-lg shadow-emerald-500/20">
+                            <button data-testid="mobile-invoice-button" onClick={() => setShowInvoice(true)} className="mt-0.5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-neo-border bg-neo-mint-solid py-2.5 text-sm font-extrabold text-white shadow-[3px_3px_0_#1a1a1a] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none">
                                 <IconReceipt className="h-4 w-4" /> Lihat E-Invoice
                             </button>
                         ) : null}

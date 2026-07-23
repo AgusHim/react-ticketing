@@ -127,28 +127,28 @@ export default function VerifyTicketPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+        <div className="neo-workspace neo-dots flex min-h-screen items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                        <IconTicket className="h-8 w-8 text-primary" />
+                    <div className="neo-icon-tile mb-4 inline-flex h-16 w-16 bg-neo-yellow-solid">
+                        <IconTicket className="h-8 w-8 text-foreground" />
                     </div>
-                    <h1 className="text-3xl font-bold text-white">War Kursi</h1>
-                    <p className="text-slate-400 mt-2">
+                    <h1 className="text-4xl font-black text-foreground">War Kursi</h1>
+                    <p className="mt-2 text-muted-foreground">
                         Verifikasi tiketmu untuk memilih kursi
                     </p>
                 </div>
 
                 {/* Verification Card */}
-                <div className="rounded-2xl border border-slate-700 bg-slate-800/50 backdrop-blur-sm p-6 shadow-xl">
-                    <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <IconShieldCheck className="h-5 w-5 text-blue-400" />
+                <div className="neo-surface bg-white p-6">
+                    <h2 className="mb-4 flex items-center gap-2 text-xl font-extrabold text-foreground">
+                        <span className="neo-icon-tile size-9 bg-neo-purple"><IconShieldCheck className="h-5 w-5 text-foreground" /></span>
                         Verifikasi E-Ticket
                     </h2>
 
                     <div className="flex flex-col gap-4">
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-muted-foreground">
                             Upload file <strong>PDF E-Ticket</strong> dari darisini. Kode tiket akan diekstrak otomatis.
                         </p>
 
@@ -170,21 +170,21 @@ export default function VerifyTicketPage() {
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
                                 className={`relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all duration-200 ${isDragOver
-                                        ? 'border-primary bg-primary/10 scale-[1.02]'
-                                        : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700/30'
+                                        ? 'border-neo-purple-solid bg-neo-purple -translate-y-1'
+                                        : 'border-neo-border bg-neo-purple/50 hover:bg-neo-purple'
                                     }`}
                             >
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className={`rounded-full p-3 transition-colors ${isDragOver ? 'bg-primary/20' : 'bg-slate-700/50'
+                                    <div className={`rounded-xl border-2 border-neo-border p-3 transition-colors ${isDragOver ? 'bg-neo-yellow-solid' : 'bg-white'
                                         }`}>
-                                        <IconUpload className={`h-6 w-6 transition-colors ${isDragOver ? 'text-primary' : 'text-slate-400'
-                                            }`} />
+                                        <IconUpload className="h-6 w-6 text-foreground"
+                                        />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-white">
+                                        <p className="text-sm font-extrabold text-foreground">
                                             {isDragOver ? 'Lepaskan file di sini' : 'Drag & drop PDF e-ticket'}
                                         </p>
-                                        <p className="text-xs text-slate-500 mt-1">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             atau klik untuk pilih file
                                         </p>
                                     </div>

@@ -18,7 +18,7 @@ export function SeatCreationTools() {
 
     return (
         <div className="flex flex-col p-4 h-full overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
-            <h1 className="font-bold text-lg mb-4 text-white tracking-tight">Project Setup</h1>
+            <h1 className="mb-4 text-lg font-extrabold tracking-tight text-foreground">Project Setup</h1>
             <div className="mb-6">
                 <Label className="text-neutral-400 text-[10px] uppercase tracking-wider font-semibold mb-2 block">Pilih Event (Show)</Label>
                 <div className="[&_button]:bg-white/[0.06] [&_button]:border-white/[0.08] [&_button]:text-neutral-300 [&_button]:rounded-xl [&_button]:text-xs">
@@ -28,7 +28,7 @@ export function SeatCreationTools() {
 
             <hr className="border-white/[0.06] mb-6" />
 
-            <h1 className="font-bold text-lg mb-2 text-white tracking-tight">Generate Block</h1>
+            <h1 className="mb-2 text-lg font-extrabold tracking-tight text-foreground">Generate Block</h1>
             <p className="text-[11px] text-neutral-500 mb-5 leading-relaxed">Tambahkan sekumpulan kursi sekaligus di tengah layar.</p>
             
             <div className="space-y-4">
@@ -41,7 +41,7 @@ export function SeatCreationTools() {
                         placeholder="Contoh: 10" 
                         value={seatGenerateConfig.cols || ''}
                         onChange={handleSeatGenerateChange} 
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
                 <div>
@@ -53,7 +53,7 @@ export function SeatCreationTools() {
                         placeholder="Contoh: 5" 
                         value={seatGenerateConfig.rows || ''}
                         onChange={handleSeatGenerateChange} 
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
                 <div>
@@ -64,7 +64,7 @@ export function SeatCreationTools() {
                         placeholder="Contoh: VIP-" 
                         value={seatGenerateConfig.group}
                         onChange={handleSeatGenerateChange} 
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
                 <div>
@@ -76,7 +76,7 @@ export function SeatCreationTools() {
                         placeholder="Contoh: 1" 
                         value={seatGenerateConfig.number_start || ''}
                         onChange={handleSeatGenerateChange} 
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
                 <div>
@@ -89,7 +89,7 @@ export function SeatCreationTools() {
                         placeholder="Contoh: 10" 
                         value={seatGenerateConfig.margin ?? ''}
                         onChange={handleSeatGenerateChange} 
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
                 <div>
@@ -100,7 +100,7 @@ export function SeatCreationTools() {
                         placeholder="Contoh: VIP" 
                         value={seatGenerateConfig.category || ''}
                         onChange={handleSeatGenerateChange} 
-                        className="bg-[#141414] border-white/[0.08] text-white mt-1.5 rounded-xl text-xs placeholder:text-neutral-600 focus-visible:ring-1 focus-visible:ring-emerald-500/50"
+                        className="mt-1.5 text-xs"
                     />
                 </div>
                 <div>
@@ -109,7 +109,7 @@ export function SeatCreationTools() {
                         name="gender"
                         value={seatGenerateConfig.gender || 'both'}
                         onChange={(e: any) => handleSeatGenerateChange(e)}
-                        className="w-full bg-[#141414] border border-white/[0.08] text-white rounded-xl mt-1.5 h-9 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                        className="mt-1.5 h-10 w-full rounded-xl border-2 border-neo-border bg-white px-3 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-neo-purple-solid/30"
                     >
                         <option value="both">Both (Semua Gender)</option>
                         <option value="male">Male (Pria)</option>
@@ -131,13 +131,13 @@ export function SeatCreationTools() {
                             type="text" 
                             value={seatGenerateConfig.color || '#10B981'}
                             onChange={handleSeatGenerateChange} 
-                            className="bg-[#141414] border-white/[0.08] text-white flex-1 rounded-xl text-xs font-mono"
+                            className="flex-1 text-xs font-mono"
                         />
                     </div>
                 </div>
                 <Button 
                     onClick={generateSeats} 
-                    className="w-full mt-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-xl h-9 transition-colors shadow-lg shadow-emerald-500/20"
+                    className="mt-2 h-10 w-full bg-neo-yellow-solid text-xs"
                 >
                     + Generate Block Kursi
                 </Button>
@@ -145,12 +145,12 @@ export function SeatCreationTools() {
 
             <hr className="border-white/[0.06] my-6" />
 
-            <h1 className="font-bold text-lg mb-2 text-white tracking-tight">Decoration Tools</h1>
+            <h1 className="mb-2 text-lg font-extrabold tracking-tight text-foreground">Decoration Tools</h1>
             <p className="text-[11px] text-neutral-500 mb-4 leading-relaxed">Tambahkan elemen dekorasi seperti panggung yang tidak bisa di-klik pembeli.</p>
             <Button 
                 onClick={createStage} 
                 variant="outline" 
-                className="w-full bg-white/[0.04] border-white/[0.08] text-neutral-300 hover:text-white hover:bg-white/[0.08] text-xs rounded-xl h-9 transition-colors"
+                className="h-10 w-full text-xs"
             >
                 + Generate Stage (Panggung)
             </Button>

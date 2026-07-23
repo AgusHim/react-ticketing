@@ -71,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b-2 border-neo-border p-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -79,7 +79,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/">
-                <span className="text-base font-semibold">YN SOLO EVENT</span>
+                <span className="inline-flex items-center gap-2 text-base font-black">
+                  <span className="neo-icon-tile size-8 bg-neo-yellow-solid">YN</span>
+                  <span>SOLO EVENT</span>
+                </span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

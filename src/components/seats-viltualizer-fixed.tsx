@@ -20,9 +20,7 @@ export const SeatVirtualizerFixed: React.FC<SeatVirtualizerFixedProps> = ({
 
     return (
         <>
-            <div
-                className="w-screen h-[80vh] overflow-auto relative"
-            >
+            <div className="neo-dots neo-surface relative h-[75vh] w-full overflow-auto">
                 <TransformWrapper
                     minScale={0.1}
                     initialScale={0.25}
@@ -47,7 +45,7 @@ export const SeatVirtualizerFixed: React.FC<SeatVirtualizerFixedProps> = ({
                                     return (
                                         <div
                                             key={index}
-                                            className={`absolute cursor-pointer flex items-center justify-center text-sm border bg-white hover:bg-gray-50`}
+                                            className="absolute flex cursor-pointer items-center justify-center rounded-lg border-2 border-neo-border bg-white text-sm shadow-[2px_2px_0_#1a1a1a] hover:-translate-y-0.5"
                                             style={{
                                                 position: "absolute",
                                                 top: rowIndex * seatSize,

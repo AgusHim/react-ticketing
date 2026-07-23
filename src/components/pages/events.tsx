@@ -21,6 +21,16 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { getAllEvents, createEvent, updateEvent, deleteEvent, type EventModel } from '@/api/event-api';
 import { toast } from 'sonner';
 import { IconCalendarEvent, IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
@@ -29,6 +39,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<EventModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<EventModel | null>(null);
   
   const [formData, setFormData] = useState<Partial<EventModel>>({
     name: '',
@@ -120,11 +131,12 @@ export default function EventsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus event ini?')) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await deleteEvent(id);
+      await deleteEvent(deleteTarget.id);
       toast.success('Event berhasil dihapus');
+      setDeleteTarget(null);
       fetchEvents();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Gagal menghapus event');
@@ -154,18 +166,18 @@ export default function EventsPage() {
             <div className="flex flex-1 flex-col">
                 <div className="@container/main flex flex-1 flex-col gap-2">
                     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 mx-5">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
-            <IconCalendarEvent className="h-8 w-8 text-primary" />
+          <h1 className="flex items-center gap-3 text-3xl font-black text-foreground">
+            <span className="neo-icon-tile size-11 bg-neo-purple"><IconCalendarEvent className="h-6 w-6 text-foreground" /></span>
             Manajemen Events
           </h1>
-          <p className="text-slate-500 mt-1">Kelola data event, waktu mulai war kursi, dan status acara.</p>
+          <p className="mt-2 text-muted-foreground">Kelola data event, waktu mulai war kursi, dan status acara.</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleOpenCreate} className="bg-primary hover:bg-primary/90 text-white gap-2">
+            <Button onClick={handleOpenCreate} className="gap-2">
               <IconPlus className="h-4 w-4" /> Tambah Event
             </Button>
           </DialogTrigger>
@@ -291,10 +303,10 @@ export default function EventsPage() {
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="neo-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
+            <thead className="border-b-2 border-neo-border bg-neo-yellow text-foreground">
               <tr>
                 <th className="px-6 py-4 font-semibold">Nama Event</th>
                 <th className="px-6 py-4 font-semibold">Waktu Pelaksanaan</th>
@@ -314,10 +326,10 @@ export default function EventsPage() {
                 </tr>
               ) : (
                 events.map((evt) => (
-                  <tr key={evt.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={evt.id} className="border-b border-neo-border/20 transition-colors hover:bg-neo-mint/60">
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-slate-800">{evt.name}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{evt.location}</div>
+                      <div className="font-extrabold text-foreground">{evt.name}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">{evt.location}</div>
                     </td>
                     <td className="px-6 py-4 text-slate-600">{formatDate(evt.date)}</td>
                     <td className="px-6 py-4">
@@ -338,10 +350,10 @@ export default function EventsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleOpenEdit(evt)} className="h-8 px-2 text-blue-600 border-blue-200 hover:bg-blue-50">
+                      <Button variant="secondary" size="sm" onClick={() => handleOpenEdit(evt)} className="h-8 px-2">
                         <IconEdit className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(evt.id)} className="h-8 px-2 text-red-600 border-red-200 hover:bg-red-50">
+                      <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(evt)} className="h-8 px-2" aria-label={`Hapus ${evt.name}`}>
                         <IconTrash className="h-4 w-4" />
                       </Button>
                     </td>
@@ -352,6 +364,22 @@ export default function EventsPage() {
           </table>
         </div>
       </div>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Event “{deleteTarget?.name}” akan dihapus. Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-white hover:bg-red-500">
+              Hapus Event
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
                     </div>
                 </div>
             </div>

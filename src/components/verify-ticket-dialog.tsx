@@ -85,15 +85,15 @@ export function VerifyTicketDialog({ eventId, onVerified, children }: { eventId:
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
                 {children ? children : (
-                    <button className="text-[10px] font-bold text-white hover:text-white transition-colors bg-orange-500 hover:bg-orange-600 px-2.5 py-1.5 rounded-full">
+                    <button className="rounded-lg border-2 border-neo-border bg-neo-yellow-solid px-2.5 py-1.5 text-[10px] font-extrabold text-foreground shadow-[2px_2px_0_#1a1a1a] transition-colors hover:bg-neo-yellow">
                         + Tambah Tiket
                     </button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-slate-200">
+            <DialogContent className="bg-white text-foreground sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-white">Tambah Tiket ke Sesi</DialogTitle>
-                    <DialogDescription className="text-slate-400">
+                    <DialogTitle>Tambah Tiket ke Sesi</DialogTitle>
+                    <DialogDescription>
                         Sebelumnya download e-tiket darisini.com . Upload file PDF e-ticket Anda untuk ditambahkan ke sesi war kursi ini.
                     </DialogDescription>
                 </DialogHeader>
@@ -117,18 +117,17 @@ export function VerifyTicketDialog({ eventId, onVerified, children }: { eventId:
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
                                 className={`relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all duration-200 ${isDragOver
-                                        ? 'border-primary bg-primary/10 scale-[1.02]'
-                                        : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700/30'
+                                        ? 'border-neo-purple-solid bg-neo-purple -translate-y-1'
+                                        : 'border-neo-border bg-neo-purple/50 hover:bg-neo-purple'
                                     }`}
                             >
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className={`rounded-full p-3 transition-colors ${isDragOver ? 'bg-primary/20' : 'bg-slate-700/50'
+                                    <div className={`rounded-xl border-2 border-neo-border p-3 transition-colors ${isDragOver ? 'bg-neo-yellow-solid' : 'bg-white'
                                         }`}>
-                                        <IconUpload className={`h-6 w-6 transition-colors ${isDragOver ? 'text-primary' : 'text-slate-400'
-                                            }`} />
+                                        <IconUpload className="h-6 w-6 text-foreground" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-white">
+                                        <p className="text-sm font-extrabold text-foreground">
                                             {isDragOver ? 'Lepaskan file di sini' : 'Drag & drop PDF e-ticket'}
                                         </p>
                                         <p className="text-xs text-slate-500 mt-1">
@@ -144,7 +143,7 @@ export function VerifyTicketDialog({ eventId, onVerified, children }: { eventId:
                                 rel="noopener noreferrer"
                                 className="w-full block mt-2"
                             >
-                                <button type="button" className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white py-2.5 rounded-xl transition-colors border border-slate-700 font-medium text-sm flex items-center justify-center gap-2">
+                                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-neo-border bg-neo-mint py-2.5 text-sm font-extrabold text-foreground shadow-[3px_3px_0_#1a1a1a] transition-colors hover:bg-white">
                                     <IconDownload className="h-4 w-4" />
                                     Download Tiket
                                 </button>

@@ -13,7 +13,7 @@ function Avatar({
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        "relative flex size-9 shrink-0 overflow-hidden rounded-xl border-2 border-neo-border bg-neo-purple shadow-[2px_2px_0_#1a1a1a]",
         className
       )}
       {...props}

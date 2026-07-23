@@ -127,22 +127,22 @@ function BookedSeatsPageInner() {
     return (
         <>
             <SiteHeader title="Booked Seats" />
-            <div className="flex flex-1 flex-col overflow-hidden relative" style={{ background: '#0a0a0a' }}>
+            <div className="neo-workspace flex flex-1 flex-col overflow-hidden relative bg-bg-app">
 
                 {/* ── Top Controls Bar ── */}
-                <div className="flex items-center justify-between px-4 py-2.5 shrink-0 z-20 border-b border-white/[0.06]" style={{ background: '#0d0d0d' }}>
+                <div className="z-20 flex shrink-0 items-center justify-between border-b-2 border-neo-border bg-bg-sidebar px-4 py-3">
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* Tab Switcher */}
-                        <div className="flex items-center bg-white/[0.06] rounded-xl p-1 gap-0.5">
+                        <div className="flex items-center gap-0.5 rounded-full border-2 border-neo-border bg-white p-1">
                             <button
                                 onClick={() => setActiveTab('layout')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${activeTab === 'layout' ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${activeTab === 'layout' ? 'bg-neo-border text-white' : 'text-foreground hover:bg-neo-yellow'}`}
                             >
                                 <IconMap className="h-3.5 w-3.5" /> Layout
                             </button>
                             <button
                                 onClick={() => setActiveTab('table')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${activeTab === 'table' ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${activeTab === 'table' ? 'bg-neo-border text-white' : 'text-foreground hover:bg-neo-yellow'}`}
                             >
                                 <IconTable className="h-3.5 w-3.5" /> Table
                             </button>
@@ -193,7 +193,7 @@ function BookedSeatsPageInner() {
 
                 {/* ── Desktop Legend ── */}
                 <div className="hidden md:block absolute bottom-24 right-6 z-40">
-                    <div className="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/[0.08] w-44">
+                    <div className="neo-surface-sm w-48 bg-white p-4">
                         <h3 className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-3">Keterangan</h3>
                         <div className="space-y-2.5 text-[11px]">
                             {[
@@ -231,16 +231,13 @@ function BookedSeatsPageInner() {
 
                 {/* ═══════════════ BOTTOM TICKET BAR (FLOATING) ═══════════════ */}
                 <div
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col w-[calc(100%-2rem)] md:min-w-100 md:w-max max-w-4xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-300"
-                    style={{
-                        background: 'rgba(13, 13, 13, 0.85)',
-                    }}
+                    className="neo-surface absolute bottom-6 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 flex-col overflow-hidden bg-white transition-all duration-300 md:min-w-100 md:w-max"
                 >
                     {/* Active Tickets Horizontal List */}
                     <div className="px-4 py-3 flex gap-3 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
                         <Drawer>
                             <DrawerTrigger asChild>
-                                <button className="shrink-0 flex items-center justify-center gap-2 h-12 px-4 rounded-xl border border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.04] transition-all text-neutral-400 hover:text-white group shadow-inner">
+                                <button className="group flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neo-border bg-neo-purple px-4 font-bold text-foreground transition-colors hover:bg-neo-yellow">
                                     <IconPlus className="h-4 w-4" />
                                     <span className="text-xs font-medium text-white">Pilih Tiket</span>
                                 </button>
@@ -260,7 +257,7 @@ function BookedSeatsPageInner() {
                                                 placeholder="Cari ID, Nama, Email..."
                                                 value={searchQuery}
                                                 onChange={handleSearchTicket}
-                                                className="pl-9 bg-[#0a0a0a] border-white/[0.08] h-11 rounded-xl text-sm"
+                                                className="h-11 bg-white pl-9 text-sm"
                                             />
                                         </div>
                                         <div className="h-[40vh] overflow-y-auto space-y-2 pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#333 transparent' }}>
@@ -344,14 +341,14 @@ function BookedSeatsPageInner() {
                     </div>
 
                     {/* Final Action Bar */}
-                    <div className="px-4 py-2.5 border-t border-white/[0.08] flex items-center justify-between bg-white/[0.02]">
+                    <div className="flex items-center justify-between border-t-2 border-neo-border bg-neo-yellow px-4 py-2.5">
                         <div className="text-xs font-medium text-neutral-400">
                             {selectedTickets.length === 0 ? "Belum ada tiket di sesi" : `${selectedTickets.length} Tiket dipilih`}
                         </div>
                         <button
                             onClick={() => setShowConfirmDialog(true)}
                             disabled={!allTicketsAssigned || selectedTickets.length === 0}
-                            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+                            className="flex items-center gap-2 rounded-xl border-2 border-neo-border bg-neo-mint-solid px-5 py-2 text-sm font-extrabold text-white shadow-[3px_3px_0_#1a1a1a] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <IconCheck className="h-4 w-4" />
                             Konfirmasi Booking

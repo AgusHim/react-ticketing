@@ -10,15 +10,15 @@ export function SeatCountByCateogry() {
         .reduce((acc, [, value]) => acc + value.total, 0);
 
     if (countByCategory) {
-        return (<div className="flex flex-row justify-start m-5 gap-4 flex-wrap bg-slate-900/50 p-3 rounded-xl border border-slate-800">
-            <div className="flex flex-row items-center gap-2 font-bold text-white bg-slate-800 px-3 py-1 rounded-lg">
+        return (<div className="neo-surface-sm flex flex-row justify-start gap-3 flex-wrap bg-neo-yellow p-3">
+            <div className="flex flex-row items-center gap-2 rounded-lg border-2 border-neo-border bg-white px-3 py-1 font-extrabold text-foreground">
                 <span>Total Kursi:</span>
-                <span className="text-primary text-white">{totalSeats}</span>
+                <span>{totalSeats}</span>
             </div>
             {Object.entries(countByCategory).map(([key, { total, color, category, gender }]) => (
-                <div key={key} className="flex flex-row items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700/50">
-                    <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: color }}></span>
-                    <div className="flex items-center gap-1.5 text-sm text-slate-200">
+                <div key={key} className="flex flex-row items-center gap-2 rounded-lg border-2 border-neo-border bg-white px-3 py-1.5">
+                    <span className="h-3 w-3 rounded-full border border-neo-border" style={{ backgroundColor: color }}></span>
+                    <div className="flex items-center gap-1.5 text-sm text-foreground">
                         <span className="font-semibold">{category}</span>
                         {gender !== 'both' && (
                             <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${gender === 'male' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400'
@@ -26,7 +26,7 @@ export function SeatCountByCateogry() {
                                 {gender === 'male' ? 'L' : 'P'}
                             </span>
                         )}
-                        <span className="text-slate-400 mx-1">•</span>
+                        <span className="mx-1 text-muted-foreground">•</span>
                         <span className="font-mono font-medium">{total}</span>
                     </div>
                 </div>

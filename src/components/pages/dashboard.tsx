@@ -66,15 +66,16 @@ export default function DashboardPage() {
               <SummaryCards />
               
               <div className="px-4 lg:px-6 mt-4">
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border shadow-sm">
-                  <h2 className="text-lg font-semibold mb-4">Pengaturan Event</h2>
+                <div className="neo-surface bg-neo-yellow p-6">
+                  <h2 className="mb-1 text-xl font-extrabold">Pengaturan Event</h2>
+                  <p className="mb-5 text-sm text-muted-foreground">Atur kapan peserta dapat mulai memilih kursi.</p>
                   <div className="flex flex-col gap-2 max-w-sm">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-sm font-bold text-foreground">
                       Jadwal Mulai War Tiket
                     </label>
                     <input 
                       type="datetime-local" 
-                      className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent dark:border-slate-700 dark:text-slate-50 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900"
+                      className="flex h-11 w-full rounded-xl border-2 border-neo-border bg-white px-3 py-2 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-neo-purple-solid/30"
                       value={warDate}
                       onChange={(e) => setWarDate(e.target.value)}
                     />

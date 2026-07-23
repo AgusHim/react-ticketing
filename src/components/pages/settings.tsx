@@ -7,6 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { getDarisiniSetting, updateDarisiniSetting } from "@/api/settings-api";
 import { toast } from "sonner";
+import { ImportExcel } from "../import-excel";
 
 export default function SettingsPage() {
   const [cookie, setCookie] = useState('');
@@ -48,11 +49,12 @@ export default function SettingsPage() {
         <SiteHeader title="Settings" />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 px-4 py-4 md:gap-6 md:px-6 md:py-6">
-              <form onSubmit={handleSubmit} className="w-full max-w-3xl rounded-lg border bg-white p-6 shadow-sm dark:bg-slate-900">
+            <div className="flex flex-col gap-6 px-4 py-4 md:px-6 md:py-6">
+              <ImportExcel />
+              <form onSubmit={handleSubmit} className="neo-surface w-full max-w-3xl bg-neo-purple p-6">
                 <div className="flex flex-col gap-2">
-                  <h2 className="text-lg font-semibold">Darisini Scanner</h2>
-                  <p className="text-sm text-slate-500">Cookie ini dipakai backend untuk scan tiket ke Darisini setelah goodie bag dikonfirmasi.</p>
+                  <h2 className="text-xl font-extrabold">Darisini Scanner</h2>
+                  <p className="text-sm text-muted-foreground">Cookie ini dipakai backend untuk scan tiket ke Darisini setelah goodie bag dikonfirmasi.</p>
                 </div>
                 <div className="mt-5 flex flex-col gap-2">
                   <Label htmlFor="darisini-cookie">Cookie</Label>

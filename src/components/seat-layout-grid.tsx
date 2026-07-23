@@ -301,7 +301,7 @@ export const SeatGrid: React.FC<SeatGridProps> = ({
   const bounds = getSelectionBounds();
 
   return (
-    <div className="w-full h-[100vh] border-l border-slate-700 relative bg-slate-900 cursor-grab active:cursor-grabbing">
+    <div className="neo-dots relative h-[100vh] w-full cursor-grab border-l-2 border-neo-border active:cursor-grabbing">
       <Stage
         width={window.innerWidth - 600}
         height={window.innerHeight}
@@ -362,9 +362,13 @@ export const SeatGrid: React.FC<SeatGridProps> = ({
                   width={seatWidth}
                   height={seatHeight}
                   fill={seat.color || "white"}
-                  stroke={selectedIds.includes(seat.id!) ? "#3B82F6" : "#475569"}
-                  strokeWidth={selectedIds.includes(seat.id!) ? 3 : 1}
-                  cornerRadius={isStage ? 8 : 4}
+                  stroke="#1A1A1A"
+                  strokeWidth={selectedIds.includes(seat.id!) ? 4 : 2}
+                  shadowColor="#1A1A1A"
+                  shadowOffsetX={selectedIds.includes(seat.id!) ? 5 : 2}
+                  shadowOffsetY={selectedIds.includes(seat.id!) ? 5 : 2}
+                  shadowBlur={0}
+                  cornerRadius={isStage ? 12 : 7}
                 />
 
                 {isStage ? (
@@ -383,9 +387,9 @@ export const SeatGrid: React.FC<SeatGridProps> = ({
 
                     <Text
                       text={seat.name || ''}
-                      fontSize={14}
+                      fontSize={15}
                       fontStyle="bold"
-                      fill={seat.color === "#000000" ? "white" : "black"}
+                      fill="white"
                       align="center"
                       verticalAlign="middle"
                       width={seatWidth}
@@ -393,8 +397,8 @@ export const SeatGrid: React.FC<SeatGridProps> = ({
                     />
                     <Text
                       text={seat.category || ''}
-                      fontSize={8}
-                      fill={seat.color === "#000000" ? "white" : "black"}
+                      fontSize={10}
+                      fill="rgba(255, 255, 255, 0.8)"
                       align="center"
                       verticalAlign="bottom"
                       width={seatWidth}
@@ -523,8 +527,8 @@ export const SeatGrid: React.FC<SeatGridProps> = ({
       </Stage>
 
       {/* Help Overlay */}
-      <div className="absolute top-4 left-4 bg-slate-800/80 p-3 rounded-lg text-xs text-slate-300 pointer-events-none backdrop-blur-sm border border-slate-700">
-        <p className="font-bold text-white mb-1">CAD Controls:</p>
+      <div className="neo-surface-sm pointer-events-none absolute top-4 left-4 bg-white p-3 text-xs text-muted-foreground">
+        <p className="mb-1 font-extrabold text-foreground">CAD Controls:</p>
         <ul className="space-y-1">
           <li>• <b>Pan</b>: Drag background</li>
           <li>• <b>Zoom</b>: Mouse Wheel</li>

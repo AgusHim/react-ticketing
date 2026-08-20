@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAllEvents, type EventModel } from "@/api/event-api";
 import { useNavigate } from "react-router-dom";
-import { IconMapPin, IconCalendarEvent, IconTicket, IconLoader2, IconArrowRight, IconSparkles } from "@tabler/icons-react";
+import { IconMapPin, IconCalendarEvent, IconTicket, IconLoader2, IconArrowRight } from "@tabler/icons-react";
 import { toast } from "sonner";
 
 export default function HomePage() {

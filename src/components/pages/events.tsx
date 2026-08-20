@@ -51,6 +51,7 @@ export default function EventsPage() {
     image_url: '',
     color: '#e50914',
     event_scanner_id: '',
+    event_scanner_user_full_name: '',
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -91,6 +92,7 @@ export default function EventsPage() {
       image_url: '',
       color: '#e50914',
       event_scanner_id: '',
+      event_scanner_user_full_name: '',
     });
     setIsDialogOpen(true);
   };
@@ -107,6 +109,7 @@ export default function EventsPage() {
       image_url: evt.image_url || '',
       color: evt.color || '#e50914',
       event_scanner_id: evt.event_scanner_id || '',
+      event_scanner_user_full_name: evt.event_scanner_user_full_name || '',
     });
     setIsDialogOpen(true);
   };
@@ -256,6 +259,18 @@ export default function EventsPage() {
                   placeholder="contoh: cmt12rzyl013js601r4p5kwj5"
                 />
                 <p className="text-xs text-muted-foreground">Dipakai untuk mengonfirmasi kehadiran ke Darisini saat goodie bag diambil.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="event_scanner_user_full_name">Nama Lengkap Petugas Scanner</Label>
+                <Input
+                  id="event_scanner_user_full_name"
+                  name="event_scanner_user_full_name"
+                  value={formData.event_scanner_user_full_name || ''}
+                  onChange={handleInputChange}
+                  placeholder="Contoh: Rijal"
+                />
+                <p className="text-xs text-muted-foreground">Dikirim sebagai nama petugas scanner ke Darisini.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

@@ -7,8 +7,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
+import type { Ticket } from "@/types/ticket";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
@@ -27,16 +28,42 @@ import { toast } from "sonner";
 export function TableTickets() {
     const { tickets, search, handleSearch, refreshTickets } = useTickets();
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [selectedTicketsById, setSelectedTicketsById] = useState<Record<string, Ticket>>({});
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isBulkLoading, setIsBulkLoading] = useState(false);
     const [processingIds, setProcessingIds] = useState<string[]>([]);
 
     const getGoodieBagStatus = (ticket: { goodie_bag_claimed?: boolean }) => ticket.goodie_bag_claimed === true;
 
+    // Search replaces `tickets` with a new result set. Keep a local snapshot of
+    // selected tickets so selections remain available even when they do not match
+    // the latest search query.
+    useEffect(() => {
+        setSelectedTicketsById((previous) => {
+            let changed = false;
+            const next = { ...previous };
+
+            tickets.forEach((ticket) => {
+                if (ticket.id && previous[ticket.id]) {
+                    next[ticket.id] = ticket;
+                    changed = true;
+                }
+            });
+
+            return changed ? next : previous;
+        });
+    }, [tickets]);
+
     const selectedTickets = useMemo(
-        () => tickets.filter((ticket) => ticket.id && selectedIds.includes(ticket.id)),
-        [tickets, selectedIds]
+        () => selectedIds.map((id) => selectedTicketsById[id]).filter((ticket): ticket is Ticket => Boolean(ticket)),
+        [selectedIds, selectedTicketsById]
     );
+
+    const displayedTickets = useMemo(() => {
+        const selected = selectedTickets;
+        const unselected = tickets.filter((ticket) => !ticket.id || !selectedIds.includes(ticket.id));
+        return [...selected, ...unselected];
+    }, [tickets, selectedIds, selectedTickets]);
 
     const selectedGoodieBagStatus = selectedTickets.length > 0 ? getGoodieBagStatus(selectedTickets[0]) : null;
     const selectableGoodieBagStatus = selectedGoodieBagStatus ?? false;
@@ -61,6 +88,10 @@ export function TableTickets() {
             await markGoodieBagsClaimed([id]);
             await refreshTickets();
             setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== id));
+            setSelectedTicketsById((prev) => {
+                const { [id]: _, ...next } = prev;
+                return next;
+            });
             toast.success("Goodie bag ditandai sudah diambil");
         } catch (error: any) {
             toast.error(error?.response?.data?.message || "Gagal mengonfirmasi goodie bag");
@@ -93,11 +124,18 @@ export function TableTickets() {
 
             const ticketGoodieBagStatus = getGoodieBagStatus(ticket);
             const sameStatusSelectedIds = prev.filter((selectedId) => {
-                const selectedTicket = tickets.find((item) => item.id === selectedId);
+                const selectedTicket = selectedTicketsById[selectedId];
                 return selectedTicket && getGoodieBagStatus(selectedTicket) === ticketGoodieBagStatus;
             });
 
             return Array.from(new Set([...sameStatusSelectedIds, ticket.id!]));
+        });
+        setSelectedTicketsById((prev) => {
+            if (!checked) {
+                const { [ticket.id!]: _, ...next } = prev;
+                return next;
+            }
+            return { ...prev, [ticket.id!]: ticket };
         });
     };
 
@@ -117,6 +155,7 @@ export function TableTickets() {
             await markGoodieBagsClaimed(ids);
             await refreshTickets();
             setSelectedIds([]);
+            setSelectedTicketsById({});
             setIsConfirmOpen(false);
             toast.success(`${ids.length} tiket ditandai sudah mengambil goodie bag`);
         } catch (error: any) {
@@ -186,7 +225,7 @@ export function TableTickets() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {tickets?.map((ticket) => {
+                    {displayedTickets.map((ticket) => {
                         const isSelected = !!ticket.id && selectedIds.includes(ticket.id);
                         const isProcessing = isProcessingTicket(ticket.id);
                         const canSelectRow = !!ticket.id && !isProcessing;

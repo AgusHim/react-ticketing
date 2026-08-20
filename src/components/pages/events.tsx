@@ -50,6 +50,7 @@ export default function EventsPage() {
     war_start_date: '',
     image_url: '',
     color: '#e50914',
+    event_scanner_id: '',
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -89,6 +90,7 @@ export default function EventsPage() {
       war_start_date: '',
       image_url: '',
       color: '#e50914',
+      event_scanner_id: '',
     });
     setIsDialogOpen(true);
   };
@@ -104,6 +106,7 @@ export default function EventsPage() {
       war_start_date: evt.war_start_date ? new Date(evt.war_start_date).toISOString().slice(0, 16) : '',
       image_url: evt.image_url || '',
       color: evt.color || '#e50914',
+      event_scanner_id: evt.event_scanner_id || '',
     });
     setIsDialogOpen(true);
   };
@@ -241,6 +244,18 @@ export default function EventsPage() {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="event_scanner_id">Event Scanner ID (Darisini)</Label>
+                <Input
+                  id="event_scanner_id"
+                  name="event_scanner_id"
+                  value={formData.event_scanner_id || ''}
+                  onChange={handleInputChange}
+                  placeholder="contoh: cmt12rzyl013js601r4p5kwj5"
+                />
+                <p className="text-xs text-muted-foreground">Dipakai untuk mengonfirmasi kehadiran ke Darisini saat goodie bag diambil.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

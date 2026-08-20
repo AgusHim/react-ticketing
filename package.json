@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:seo": "npm run build && node scripts/prerender-public.mjs",
+    "test:seo": "node --test seo-tests/prerender-public.test.mjs",
     "test:integration": "playwright test",
     "lint": "eslint .",
     "preview": "vite preview"

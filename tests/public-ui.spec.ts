@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.route('http://127.0.0.1:3000/api/events', async (route) => {
+  await page.route('http://127.0.0.1:3000/api/v1/events?**', async (route) => {
     await route.fulfill({
       json: {
         data: [
@@ -15,8 +15,15 @@ test.beforeEach(async ({ page }) => {
             color: '#6c63d6',
             created_at: '2026-07-01T00:00:00.000Z',
             updated_at: '2026-07-01T00:00:00.000Z',
+            community: {
+              id: 'community-soft',
+              slug: 'soft-community',
+              name: 'Soft Community',
+              type: 'general',
+            },
           },
         ],
+        meta: { total: 1, page: 1, limit: 12 },
       },
     });
   });
@@ -27,7 +34,7 @@ test('halaman publik memakai light Soft Neo-Brutalism', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Pilih Event Favoritmu' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Soft Neo Festival' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Pesan Kursi/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Lihat Event/ })).toBeVisible();
 
   const homeTokens = await page.locator('body').evaluate((element) => {
     const styles = getComputedStyle(element);

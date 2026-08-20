@@ -8,15 +8,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { getDarisiniSetting, updateDarisiniSetting } from "@/api/settings-api";
 import { toast } from "sonner";
 import { ImportExcel } from "../import-excel";
+import axios from "axios";
 
 export default function SettingsPage() {
   const [cookie, setCookie] = useState('');
+  const [isConfigured, setIsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     getDarisiniSetting()
-      .then((data) => setCookie(data.cookie || ''))
+      .then((data) => setIsConfigured(data.configured))
       .catch(() => toast.error('Gagal mengambil setting Darisini'))
       .finally(() => setIsLoading(false));
   }, []);
@@ -26,10 +28,14 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       const updated = await updateDarisiniSetting(cookie);
-      setCookie(updated.cookie || '');
+      setIsConfigured(updated.configured);
+      setCookie('');
       toast.success('Cookie Darisini berhasil disimpan');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Gagal menyimpan cookie Darisini');
+    } catch (error: unknown) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message
+        : undefined;
+      toast.error(message || 'Gagal menyimpan cookie Darisini');
     } finally {
       setIsSaving(false);
     }
@@ -55,9 +61,14 @@ export default function SettingsPage() {
                 <div className="flex flex-col gap-2">
                   <h2 className="text-xl font-extrabold">Darisini Scanner</h2>
                   <p className="text-sm text-muted-foreground">Cookie ini dipakai backend untuk scan tiket ke Darisini setelah goodie bag dikonfirmasi.</p>
+                  <p className="text-sm font-bold">
+                    Status: {isConfigured ? 'Sudah dikonfigurasi' : 'Belum dikonfigurasi'}
+                  </p>
                 </div>
                 <div className="mt-5 flex flex-col gap-2">
-                  <Label htmlFor="darisini-cookie">Cookie</Label>
+                  <Label htmlFor="darisini-cookie">
+                    {isConfigured ? 'Ganti cookie' : 'Cookie'}
+                  </Label>
                   <Textarea
                     id="darisini-cookie"
                     value={cookie}
@@ -68,7 +79,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="mt-5 flex justify-end">
-                  <Button type="submit" disabled={isLoading || isSaving}>
+                  <Button type="submit" disabled={isLoading || isSaving || cookie.trim() === ''}>
                     {isSaving ? 'Menyimpan...' : 'Simpan Cookie'}
                   </Button>
                 </div>

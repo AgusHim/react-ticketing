@@ -1,7 +1,7 @@
 import { admin_api } from './axios';
 
 export type DarisiniSetting = {
-    cookie: string;
+    configured: boolean;
 };
 
 export const getDarisiniSetting = async (): Promise<DarisiniSetting> => {

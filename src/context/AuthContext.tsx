@@ -6,6 +6,7 @@ export interface AuthContextType {
   handleLogin: (email:string, password:string) => Promise<User|null>;
   logout: () => void;
   isAuthenticated: boolean;
+  isInitialized: boolean;
   setUser:React.Dispatch<React.SetStateAction<User | null>>;
 }
 

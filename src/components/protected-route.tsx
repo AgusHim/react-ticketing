@@ -1,28 +1,14 @@
 // src/components/ProtectedRoute.tsx
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useEffect, useState } from "react";
 
 const ProtectedRoute = () => {
-    const { user, setUser } = useAuth();
-    const [isInit, setInit] = useState<boolean>(true);
+    const { user, isInitialized } = useAuth();
 
-    useEffect(() => {
-        if(isInit){
-            const storedUser = localStorage.getItem("user");
-        console.log("StoredUser", storedUser);
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setInit(false);
-        }
-        
-    }, [setUser,isInit, setInit]);
-
-    if (user == null) {
-        return <div>Loading ...</div>
+    if (!isInitialized) {
+        return <div className="flex min-h-svh items-center justify-center font-bold">Memuat sesi...</div>
     }
-    if (isInit == false && user == null) {
+    if (user == null) {
         return <Navigate to="/login" replace />;
     }
 

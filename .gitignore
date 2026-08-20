@@ -12,6 +12,24 @@ dist
 dist-ssr
 *.local
 
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Test and generated artifacts
+playwright-report/
+test-results/
+blob-report/
+*.pdf
+*.xlsx
+*.xls
+*.db
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -17,6 +17,7 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
     });
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [search, setSearch] = useState<string>("");
+    const [category, setCategory] = useState<string>("");
     const requestSeqRef = useRef(0);
 
     const refreshTickets = useCallback(async () => {
@@ -24,7 +25,7 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
         requestSeqRef.current = requestSeq;
 
         try {
-            const tickets = await findTicketsByID(search, 1, 20);
+            const tickets = await findTicketsByID(search, category, 1, 20);
             if (requestSeq === requestSeqRef.current) {
                 setTickets(tickets);
             }
@@ -33,7 +34,7 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
                 toast.error(`Failed to fetch tickets: ${err}`);
             }
         }
-    }, [search]);
+    }, [search, category]);
 
     useEffect(() => {
         void refreshTickets();
@@ -41,6 +42,10 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
 
     const handleSearch = (search: string) => {
         setSearch(search);
+    }
+
+    const handleCategoryChange = (category: string) => {
+        setCategory(category);
     }
 
     return (
@@ -52,7 +57,10 @@ export const TicketsProvider = ({ children }: { children: React.ReactNode }) => 
                 setTicket,
                 search,
                 setSearch,
+                category,
+                setCategory,
                 handleSearch,
+                handleCategoryChange,
                 refreshTickets,
             }}
         >

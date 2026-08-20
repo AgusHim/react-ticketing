@@ -9,7 +9,10 @@ export type TicketsContextType = {
     setTicket: React.Dispatch<React.SetStateAction<Ticket>>;
     search: string;
     setSearch: React.Dispatch<React.SetStateAction<string>>;
+    category: string;
+    setCategory: React.Dispatch<React.SetStateAction<string>>;
     handleSearch: (search: string) => void;
+    handleCategoryChange: (category: string) => void;
     refreshTickets: () => Promise<void>;
 };
 

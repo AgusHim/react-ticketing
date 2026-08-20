@@ -7,6 +7,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { useEffect, useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import type { Ticket } from "@/types/ticket";
@@ -26,7 +33,7 @@ import { markGoodieBagsClaimed } from "@/api/ticket-api";
 import { toast } from "sonner";
 
 export function TableTickets() {
-    const { tickets, search, handleSearch, refreshTickets } = useTickets();
+    const { tickets, search, handleSearch, category, handleCategoryChange, refreshTickets } = useTickets();
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [selectedTicketsById, setSelectedTicketsById] = useState<Record<string, Ticket>>({});
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -189,7 +196,22 @@ export function TableTickets() {
     return (
         <div className="space-y-5 px-5">
             <div className="neo-surface-sm flex flex-col items-stretch justify-between gap-4 bg-neo-purple p-4 md:flex-row md:items-center">
-                <div className="flex w-full flex-row items-center gap-2"><IconSearch /><Input className="w-full md:w-1/2" placeholder="Cari berdasarkan id, nama, email..." value={search} onChange={handleChange} /></div>
+                <div className="flex w-full flex-row items-center gap-2">
+                    <IconSearch />
+                    <Input className="w-full md:w-1/3" placeholder="Cari berdasarkan id, nama, email..." value={search} onChange={handleChange} />
+                    <Select value={category || "all"} onValueChange={(v) => handleCategoryChange(v === "all" ? "" : v)}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Semua Kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Kategori</SelectItem>
+                            <SelectItem value="platinum">Platinum</SelectItem>
+                            <SelectItem value="gold">Gold</SelectItem>
+                            <SelectItem value="silver">Silver</SelectItem>
+                            <SelectItem value="VIP">VIP</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <Button
                     type="button"
                     disabled={!canConfirmSelected || isBulkLoading}

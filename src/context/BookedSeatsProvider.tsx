@@ -235,7 +235,7 @@ export const BookedSeatsProvider = ({ children }: { children: React.ReactNode })
     }
 
     const searchTicketsByID = async (id: string) => {
-        const tickets = await findTicketsByID(id, 1, 5, selectedShow);
+        const tickets = await findTicketsByID(id, "", 1, 5, selectedShow);
         setTickets(tickets);
     }
 

@@ -1,0 +1,299 @@
+import { useEffect, useMemo, useState } from "react"
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Pie,
+    PieChart,
+    XAxis,
+    YAxis,
+} from "recharts"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+import {
+    ChartContainer,
+    ChartLegend,
+    ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
+    type ChartConfig,
+} from "@/components/ui/chart"
+import { getDashboardData } from "@/api/dashboard"
+import type { BookedSeatsSummary } from "@/types/dashboard"
+
+// Neo-brutalist chart palette (mirrors --chart-1..5 from index.css).
+const PALETTE = ["#f5c518", "#2f8f72", "#e85a9e", "#6c63d6", "#ef7b45"]
+const CLAIMED_COLOR = "#2f8f72"
+const UNCLAIMED_COLOR = "#f5c518"
+
+const safeKey = (name: string) => "t_" + name.replace(/[^a-zA-Z0-9]/g, "_")
+
+const KPI_CARDS = [
+    "bg-neo-yellow",
+    "bg-neo-mint",
+    "bg-neo-pink",
+    "bg-neo-purple",
+] as const
+
+export default function DistributionCharts() {
+    const [data, setData] = useState<BookedSeatsSummary>()
+
+    useEffect(() => {
+        getDashboardData()
+            .then(setData)
+            .catch((err) => console.error("Failed to fetch dashboard", err))
+    }, [])
+
+    // --- Ticket distribution: per show, stacked by ticket_name ---
+    const ticketChart = useMemo(() => {
+        const summary = data?.ticket_summary ?? {}
+        const ticketNameSet = new Set<string>()
+        Object.values(summary).forEach((byName) =>
+            Object.keys(byName).forEach((n) => ticketNameSet.add(n))
+        )
+        const names = Array.from(ticketNameSet).sort()
+
+        const rows = Object.entries(summary).map(([show, byName]) => {
+            const row: Record<string, number | string> = { show: show || "Tanpa Show" }
+            names.forEach((n) => {
+                row[safeKey(n)] = byName[n] ?? 0
+            })
+            return row
+        })
+
+        const config: ChartConfig = {}
+        names.forEach((n, i) => {
+            config[safeKey(n)] = {
+                label: n,
+                color: PALETTE[i % PALETTE.length],
+            }
+        })
+
+        return { rows, names, config }
+    }, [data])
+
+    const totalTickets = useMemo(() => {
+        const summary = data?.ticket_summary ?? {}
+        return Object.values(summary).reduce(
+            (acc, byName) =>
+                acc + Object.values(byName).reduce((sum, c) => sum + c, 0),
+            0
+        )
+    }, [data])
+
+    // --- Goodie bag distribution ---
+    const goodie = data?.goodie_bag
+    const goodieTotal = goodie?.total ?? 0
+    const goodieClaimed = goodie?.claimed ?? 0
+    const goodieUnclaimed = goodie?.unclaimed ?? 0
+    const claimedPercent =
+        goodieTotal > 0 ? Math.round((goodieClaimed / goodieTotal) * 100) : 0
+
+    const donutData = [
+        { key: "claimed", name: "Diambil", value: goodieClaimed },
+        { key: "unclaimed", name: "Belum Diambil", value: goodieUnclaimed },
+    ]
+    const donutConfig: ChartConfig = {
+        claimed: { label: "Diambil", color: CLAIMED_COLOR },
+        unclaimed: { label: "Belum Diambil", color: UNCLAIMED_COLOR },
+    }
+
+    const goodieByCategory = useMemo(() => {
+        const byCat = data?.goodie_bag?.by_category ?? {}
+        return Object.entries(byCat)
+            .map(([category, s]) => ({
+                category,
+                claimed: s.claimed,
+                unclaimed: s.unclaimed,
+                total: s.total,
+            }))
+            .sort((a, b) => b.total - a.total)
+    }, [data])
+
+    const categoryConfig: ChartConfig = {
+        claimed: { label: "Diambil", color: CLAIMED_COLOR },
+        unclaimed: { label: "Belum Diambil", color: UNCLAIMED_COLOR },
+    }
+
+    if (!data) {
+        return null
+    }
+
+    const hasTicketData = totalTickets > 0
+    const hasGoodieData = goodieTotal > 0
+
+    return (
+        <div className="px-4 lg:px-6 space-y-6">
+            <div>
+                <h2 className="text-xl font-extrabold">Persebaran Tiket &amp; Goodie Bag</h2>
+                <p className="text-sm text-muted-foreground">
+                    Visualisasi distribusi tiket dan status pengambilan goodie bag.
+                </p>
+            </div>
+
+            {/* KPI cards */}
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <Card className={`neo-lift ${KPI_CARDS[0]}`}>
+                    <CardContent className="space-y-1 p-5">
+                        <p className="text-sm font-bold text-muted-foreground">Total Tiket</p>
+                        <div className="text-4xl font-black">{totalTickets}</div>
+                    </CardContent>
+                </Card>
+                <Card className={`neo-lift ${KPI_CARDS[1]}`}>
+                    <CardContent className="space-y-1 p-5">
+                        <p className="text-sm font-bold text-muted-foreground">Goodie Bag Diambil</p>
+                        <div className="text-4xl font-black">{goodieClaimed}</div>
+                    </CardContent>
+                </Card>
+                <Card className={`neo-lift ${KPI_CARDS[2]}`}>
+                    <CardContent className="space-y-1 p-5">
+                        <p className="text-sm font-bold text-muted-foreground">Belum Diambil</p>
+                        <div className="text-4xl font-black">{goodieUnclaimed}</div>
+                    </CardContent>
+                </Card>
+                <Card className={`neo-lift ${KPI_CARDS[3]}`}>
+                    <CardContent className="space-y-1 p-5">
+                        <p className="text-sm font-bold text-muted-foreground">Persentase Diambil</p>
+                        <div className="text-4xl font-black">{claimedPercent}%</div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Ticket distribution stacked bar */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Persebaran Tiket per Show</CardTitle>
+                    <CardDescription>
+                        Jumlah tiket untuk masing-masing show, dipecah berdasarkan jenis tiket.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {hasTicketData ? (
+                        <ChartContainer
+                            config={ticketChart.config}
+                            className="aspect-auto h-[300px] w-full"
+                        >
+                            <BarChart data={ticketChart.rows}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="show"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                />
+                                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <ChartLegend content={<ChartLegendContent />} />
+                                {ticketChart.names.map((n) => (
+                                    <Bar
+                                        key={n}
+                                        dataKey={safeKey(n)}
+                                        stackId="a"
+                                        fill={`var(--color-${safeKey(n)})`}
+                                        radius={4}
+                                    />
+                                ))}
+                            </BarChart>
+                        </ChartContainer>
+                    ) : (
+                        <p className="py-10 text-center text-sm text-muted-foreground">
+                            Belum ada data tiket.
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Goodie bag donut + per category bar */}
+            <div className="grid gap-5 lg:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Status Goodie Bag</CardTitle>
+                        <CardDescription>
+                            Perbandingan goodie bag yang sudah dan belum diambil.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {hasGoodieData ? (
+                            <ChartContainer
+                                config={donutConfig}
+                                className="aspect-auto h-[300px] w-full"
+                            >
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent nameKey="key" />} />
+                                    <Pie
+                                        data={donutData}
+                                        dataKey="value"
+                                        nameKey="key"
+                                        innerRadius={60}
+                                        outerRadius={100}
+                                        paddingAngle={2}
+                                    >
+                                        <Cell fill={CLAIMED_COLOR} />
+                                        <Cell fill={UNCLAIMED_COLOR} />
+                                    </Pie>
+                                    <ChartLegend content={<ChartLegendContent nameKey="key" />} />
+                                </PieChart>
+                            </ChartContainer>
+                        ) : (
+                            <p className="py-10 text-center text-sm text-muted-foreground">
+                                Belum ada data goodie bag.
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Persebaran Goodie Bag per Kategori</CardTitle>
+                        <CardDescription>
+                            Status pengambilan goodie bag dipecah per kategori tiket.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {hasGoodieData && goodieByCategory.length > 0 ? (
+                            <ChartContainer
+                                config={categoryConfig}
+                                className="aspect-auto h-[300px] w-full"
+                            >
+                                <BarChart data={goodieByCategory}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="category"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickMargin={8}
+                                    />
+                                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <ChartLegend content={<ChartLegendContent />} />
+                                    <Bar
+                                        dataKey="claimed"
+                                        stackId="a"
+                                        fill="var(--color-claimed)"
+                                        radius={4}
+                                    />
+                                    <Bar
+                                        dataKey="unclaimed"
+                                        stackId="a"
+                                        fill="var(--color-unclaimed)"
+                                        radius={4}
+                                    />
+                                </BarChart>
+                            </ChartContainer>
+                        ) : (
+                            <p className="py-10 text-center text-sm text-muted-foreground">
+                                Belum ada data goodie bag.
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
+}

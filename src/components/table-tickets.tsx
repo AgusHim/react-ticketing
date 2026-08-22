@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 import { useEffect, useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
-import type { Ticket } from "@/types/ticket";
+import type { Ticket, DarisiniCheck } from "@/types/ticket";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
@@ -28,8 +28,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "./ui/dialog";
-import { IconChecks, IconSearch } from "@tabler/icons-react";
-import { markGoodieBagsClaimed } from "@/api/ticket-api";
+import { IconChecks, IconSearch, IconCircleCheck } from "@tabler/icons-react";
+import { markGoodieBagsClaimed, checkTicketDarisini } from "@/api/ticket-api";
 import { toast } from "sonner";
 
 export function TableTickets() {
@@ -39,8 +39,16 @@ export function TableTickets() {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isBulkLoading, setIsBulkLoading] = useState(false);
     const [processingIds, setProcessingIds] = useState<string[]>([]);
+    const [checkDialog, setCheckDialog] = useState<{ ticket: Ticket; result: DarisiniCheck } | null>(null);
 
     const getGoodieBagStatus = (ticket: { goodie_bag_claimed?: boolean }) => ticket.goodie_bag_claimed === true;
+
+    const formatDateTime = (iso?: string) => {
+        if (!iso) return "-";
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+    };
 
     // Search replaces `tickets` with a new result set. Keep a local snapshot of
     // selected tickets so selections remain available even when they do not match
@@ -121,8 +129,8 @@ export function TableTickets() {
         setSelectedIds((prev) => Array.from(new Set([...prev, ...claimableTicketIds])));
     };
 
-    const handleSelectTicket = (ticket: typeof tickets[number], checked: boolean) => {
-        if (!ticket.id || isProcessingTicket(ticket.id)) return;
+    const applySelect = (ticket: typeof tickets[number], checked: boolean) => {
+        if (!ticket.id) return;
 
         setSelectedIds((prev) => {
             if (!checked) {
@@ -144,6 +152,39 @@ export function TableTickets() {
             }
             return { ...prev, [ticket.id!]: ticket };
         });
+    };
+
+    const handleSelectTicket = async (ticket: typeof tickets[number], checked: boolean) => {
+        if (!ticket.id || isProcessingTicket(ticket.id)) return;
+        if (checkDialog) return;
+
+        if (!checked) {
+            applySelect(ticket, false);
+            return;
+        }
+
+        // Checking a ticket: validate via Darisini first. If the ticket has
+        // already been scanned, show a review popup before proceeding.
+        setProcessingIds((prev) => Array.from(new Set([...prev, ticket.id!])));
+        try {
+            const result = await checkTicketDarisini(ticket.id);
+            const attendance = result?.data?.attendance ?? [];
+            if (attendance.length > 0) {
+                setCheckDialog({ ticket, result });
+            } else {
+                applySelect(ticket, true);
+            }
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Gagal mengecek tiket ke Darisini");
+        } finally {
+            setProcessingIds((prev) => prev.filter((id) => id !== ticket.id));
+        }
+    };
+
+    const handleConfirmCheckTicket = () => {
+        if (!checkDialog) return;
+        applySelect(checkDialog.ticket, true);
+        setCheckDialog(null);
     };
 
     const handleConfirmSelected = async () => {
@@ -331,6 +372,75 @@ export function TableTickets() {
                         </Button>
                         <Button type="button" onClick={handleConfirmSelected} disabled={isBulkLoading || !canConfirmSelected}>
                             {isBulkLoading ? 'Memproses...' : 'Konfirmasi'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!checkDialog} onOpenChange={(open) => { if (!open) setCheckDialog(null); }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <IconCircleCheck className="size-5 text-neo-mint-solid" />
+                            Tiket Sudah Discan
+                        </DialogTitle>
+                        <DialogDescription>
+                            Tiket berikut sudah tercatat kehadirannya di Darisini. Tinjau detail, lalu konfirmasi untuk melanjutkan checklist.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {checkDialog && (() => {
+                        const { ticket, result } = checkDialog;
+                        const data = result?.data ?? null;
+                        const attendance = data?.attendance ?? [];
+                        const latest = attendance.length > 0 ? attendance[attendance.length - 1] : undefined;
+                        return (
+                            <div className="space-y-3">
+                                <div className="rounded-xl border-2 border-neo-border bg-neo-yellow p-3 text-sm">
+                                    <div className="font-extrabold">{data?.ticket?.name || ticket.ticket_name || '-'}</div>
+                                    <div className="text-muted-foreground">{data?.ticket?.eventTitle || ticket.event?.name || '-'}</div>
+                                </div>
+                                <div className="rounded-xl border-2 border-neo-border p-3 text-sm space-y-1">
+                                    <div className="mb-1 font-bold">Sudah discan:</div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Kapan</span>
+                                        <span className="font-medium text-right">{formatDateTime(latest?.attendedAt)}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Oleh</span>
+                                        <span className="font-medium text-right">{latest?.scannerUserFullName || '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Jumlah Scan</span>
+                                        <span className="font-medium text-right">{data?.currentScanCount ?? 0}/{data?.maximumScan ?? 0}</span>
+                                    </div>
+                                </div>
+                                <div className="rounded-xl border-2 border-neo-border p-3 text-sm space-y-1">
+                                    <div className="mb-1 font-bold">Pemilik Tiket:</div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Nama</span>
+                                        <span className="font-medium text-right">{data?.ownerUserFullName || ticket.name || '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Email</span>
+                                        <span className="font-medium text-right">{data?.ownerUserEmail || ticket.email || '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Kode</span>
+                                        <span className="font-medium text-right">{data?.publicId || ticket.ticket_code || '-'}</span>
+                                    </div>
+                                </div>
+                                {result?.error?.message && (
+                                    <p className="text-xs text-amber-600">Catatan: {result.error.message}</p>
+                                )}
+                            </div>
+                        );
+                    })()}
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setCheckDialog(null)}>
+                            Batal
+                        </Button>
+                        <Button type="button" onClick={handleConfirmCheckTicket}>
+                            Lanjut Checklist
                         </Button>
                     </DialogFooter>
                 </DialogContent>

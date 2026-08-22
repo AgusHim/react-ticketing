@@ -5,6 +5,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import SummaryCards from "../summery-cards"
+import DistributionCharts from "../distribution-charts"
 import { useEffect, useState } from "react"
 import { getEvent, updateEvent, type EventModel } from "@/api/event-api"
 import { toast } from "sonner"
@@ -64,6 +65,7 @@ export default function DashboardPage() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <SummaryCards />
+              <DistributionCharts />
               
               <div className="px-4 lg:px-6 mt-4">
                 <div className="neo-surface bg-neo-yellow p-6">

@@ -20,3 +20,35 @@ export type Ticket = {
     darisini_scanned_at?: string | null;
     category?: string;
 };
+
+export type DarisiniAttendance = {
+    decodedId?: string;
+    attendedAt?: string;
+    scannerUserFullName?: string;
+    notes?: string[];
+    attachmentUrl?: string | null;
+};
+
+export type DarisiniCheck = {
+    success?: boolean;
+    error?: {
+        code?: string;
+        message?: string;
+        ticketName?: string;
+        eventTitle?: string;
+        eventShortUrl?: string;
+    } | null;
+    data?: {
+        publicId?: string;
+        orderUserEmail?: string;
+        orderUserFullName?: string;
+        ownerUserEmail?: string;
+        ownerUserFullName?: string;
+        ownerUserGender?: string;
+        ticket?: { name?: string; eventTitle?: string; eventStartDate?: string };
+        attendance?: DarisiniAttendance[];
+        maximumScan?: number;
+        currentScanCount?: number;
+    } | null;
+};
+

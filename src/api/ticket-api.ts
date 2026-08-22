@@ -1,5 +1,5 @@
 
-import type { Ticket } from '@/types/ticket';
+import type { Ticket, DarisiniCheck } from '@/types/ticket';
 import { admin_api } from './axios';
 import type { BookedSeat } from '@/types/booked-seat';
 
@@ -30,4 +30,9 @@ export const toggleGoodieBag = async (id: string): Promise<Ticket> => {
 export const markGoodieBagsClaimed = async (ids: string[]): Promise<Ticket[]> => {
     const res = await admin_api.post(`/admin_api/tickets/goodie-bags/claim`, { ids });
     return res.data.data as Ticket[];
+};
+
+export const checkTicketDarisini = async (id: string): Promise<DarisiniCheck> => {
+    const res = await admin_api.get(`/admin_api/tickets/${id}/check-darisini`);
+    return res.data.data as DarisiniCheck;
 };

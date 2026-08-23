@@ -43,6 +43,21 @@ export function TableTickets() {
 
     const getGoodieBagStatus = (ticket: { goodie_bag_claimed?: boolean }) => ticket.goodie_bag_claimed === true;
 
+    // Normalize the gender value (which can come from Darisini, CSV, or Excel
+    // import as "Laki-laki", "Perempuan", "L", "P", "Pria", "Male", etc.) into
+    // a badge color class. Case-insensitive and tolerant of Indonesian terms.
+    const getGenderBadgeClass = (gender?: string) => {
+        if (!gender) return "bg-neutral-200 text-neutral-600";
+        const g = gender.toLowerCase().trim();
+        if (g === "male" || g.includes("laki") || g === "l" || g === "pria" || g === "m") {
+            return "bg-blue-500 text-white";
+        }
+        if (g === "female" || g.includes("perempuan") || g === "p" || g === "wanita" || g === "f") {
+            return "bg-pink-500 text-white";
+        }
+        return "bg-neutral-200 text-neutral-600";
+    };
+
     const formatDateTime = (iso?: string) => {
         if (!iso) return "-";
         const d = new Date(iso);
@@ -98,6 +113,8 @@ export function TableTickets() {
     const handleClaimGoodieBag = async (id: string) => {
         if (isProcessingTicket(id)) return;
 
+        const toastId = `claim-${id}`;
+        toast.loading("Menandai goodie bag & memindai ke Darisini...", { id: toastId });
         setProcessingIds((prev) => Array.from(new Set([...prev, id])));
         try {
             await markGoodieBagsClaimed([id]);
@@ -107,9 +124,9 @@ export function TableTickets() {
                 const { [id]: _, ...next } = prev;
                 return next;
             });
-            toast.success("Goodie bag ditandai sudah diambil");
+            toast.success("Goodie bag ditandai sudah diambil", { id: toastId });
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Gagal mengonfirmasi goodie bag");
+            toast.error(error?.response?.data?.message || "Gagal mengonfirmasi goodie bag", { id: toastId });
         } finally {
             setProcessingIds((prev) => prev.filter((processingId) => processingId !== id));
         }
@@ -136,14 +153,10 @@ export function TableTickets() {
             if (!checked) {
                 return prev.filter((selectedId) => selectedId !== ticket.id);
             }
-
-            const ticketGoodieBagStatus = getGoodieBagStatus(ticket);
-            const sameStatusSelectedIds = prev.filter((selectedId) => {
-                const selectedTicket = selectedTicketsById[selectedId];
-                return selectedTicket && getGoodieBagStatus(selectedTicket) === ticketGoodieBagStatus;
-            });
-
-            return Array.from(new Set([...sameStatusSelectedIds, ticket.id!]));
+            // Append to the existing selection without filtering by goodie bag
+            // status. Mixing statuses is allowed; bulk-confirm already filters
+            // to only the unclaimed tickets at submit time.
+            return Array.from(new Set([...prev, ticket.id!]));
         });
         setSelectedTicketsById((prev) => {
             if (!checked) {
@@ -156,28 +169,36 @@ export function TableTickets() {
 
     const handleSelectTicket = async (ticket: typeof tickets[number], checked: boolean) => {
         if (!ticket.id || isProcessingTicket(ticket.id)) return;
-        if (checkDialog) return;
 
         if (!checked) {
             applySelect(ticket, false);
             return;
         }
 
-        // Checking a ticket: validate via Darisini first. If the ticket has
-        // already been scanned, show a review popup before proceeding.
-        setProcessingIds((prev) => Array.from(new Set([...prev, ticket.id!])));
+        // Do NOT select yet. Validate against Darisini first so a scanned
+        // ticket can be reviewed before being added to the selection. This is
+        // non-blocking for other tickets: clicking another row starts its own
+        // independent scan. The loading alert shows while this scan runs.
+        const ticketId = ticket.id;
+        const toastId = `darisini-scan-${ticketId}`;
+        toast.loading("Memeriksa tiket ke Darisini...", { id: toastId });
+        setProcessingIds((prev) => Array.from(new Set([...prev, ticketId])));
         try {
-            const result = await checkTicketDarisini(ticket.id);
+            const result = await checkTicketDarisini(ticketId);
             const attendance = result?.data?.attendance ?? [];
             if (attendance.length > 0) {
+                // Scanned: show review popup. The ticket is only added to the
+                // selection when the user confirms via "Lanjut Checklist".
                 setCheckDialog({ ticket, result });
+                toast.info("Tiket sudah pernah discan. Tinjau detail sebelum melanjutkan.", { id: toastId });
             } else {
                 applySelect(ticket, true);
+                toast.success("Tiket belum discan, aman.", { id: toastId });
             }
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Gagal mengecek tiket ke Darisini");
+            toast.error(error?.response?.data?.message || "Gagal mengecek tiket ke Darisini", { id: toastId });
         } finally {
-            setProcessingIds((prev) => prev.filter((id) => id !== ticket.id));
+            setProcessingIds((prev) => prev.filter((id) => id !== ticketId));
         }
     };
 
@@ -197,6 +218,8 @@ export function TableTickets() {
             return;
         }
 
+        const toastId = "bulk-claim";
+        toast.loading(`Memproses ${ids.length} tiket & memindai ke Darisini...`, { id: toastId });
         setIsBulkLoading(true);
         setProcessingIds((prev) => Array.from(new Set([...prev, ...ids])));
         try {
@@ -205,9 +228,9 @@ export function TableTickets() {
             setSelectedIds([]);
             setSelectedTicketsById({});
             setIsConfirmOpen(false);
-            toast.success(`${ids.length} tiket ditandai sudah mengambil goodie bag`);
+            toast.success(`${ids.length} tiket ditandai sudah mengambil goodie bag`, { id: toastId });
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Gagal mengonfirmasi goodie bag terpilih");
+            toast.error(error?.response?.data?.message || "Gagal mengonfirmasi goodie bag terpilih", { id: toastId });
         } finally {
             setProcessingIds((prev) => prev.filter((processingId) => !ids.includes(processingId)));
             setIsBulkLoading(false);
@@ -277,11 +300,9 @@ export function TableTickets() {
                             />
                         </TableHead>
                         <TableHead className="w-[100px]">ID</TableHead>
+                        <TableHead className="w-64">Peserta</TableHead>
                         <TableHead className="w-40">Ticket Name</TableHead>
                         <TableHead className="w-40">Kategori</TableHead>
-                        <TableHead className="w-40">Name</TableHead>
-                        <TableHead className="w-10">Gender</TableHead>
-                        <TableHead className="w-20">Email</TableHead>
                         <TableHead className="w-20">Event</TableHead>
                         <TableHead className="w-32">Scan Darisini</TableHead>
                         <TableHead className="w-32">Goodie Bag</TableHead>
@@ -309,11 +330,23 @@ export function TableTickets() {
                                     />
                                 </TableCell>
                                 <TableCell className="font-medium">{ticket.ticket_code}</TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col gap-0.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium truncate">{ticket.name || '-'}</span>
+                                            {ticket.gender && (
+                                                <span className={`shrink-0 rounded-full border border-neo-border px-1.5 py-0.5 text-[10px] font-bold uppercase ${getGenderBadgeClass(ticket.gender)}`}>
+                                                    {ticket.gender}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {ticket.email && (
+                                            <span className="truncate text-xs text-muted-foreground">{ticket.email}</span>
+                                        )}
+                                    </div>
+                                </TableCell>
                                 <TableCell>{ticket.ticket_name}</TableCell>
                                 <TableCell>{ticket.category}</TableCell>
-                                <TableCell>{ticket.name}</TableCell>
-                                <TableCell>{ticket.gender}</TableCell>
-                                <TableCell>{ticket.email}</TableCell>
                                 <TableCell>{ticket.event?.name ?? ''}</TableCell>
                                 <TableCell>{renderScanStatus(ticket.darisini_scan_status, ticket.darisini_scan_response)}</TableCell>
                                 <TableCell onClick={(event) => event.stopPropagation()}>

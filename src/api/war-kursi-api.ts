@@ -7,6 +7,13 @@ export interface ImportResult {
   skipped_count: number;
 }
 
+export interface SyncResult {
+  message: string;
+  imported_count: number;
+  updated_count: number;
+  skipped_count: number;
+}
+
 export interface VerifyResult {
   ticket_id: string;
   ticket_code: string;
@@ -30,6 +37,17 @@ export const importExcelParticipants = async (file: File, eventId: string): Prom
     timeout: 60000, // 60s for large files
   });
   return res.data as ImportResult;
+};
+
+// Admin: Sync participants from Darisini (replaces Excel import)
+export const syncDarisiniParticipants = async (eventId: string, eventScannerId: string): Promise<SyncResult> => {
+  const res = await admin_api.post('/admin_api/tickets/sync-darisini', {
+    event_id: eventId,
+    event_scanner_id: eventScannerId,
+  }, {
+    timeout: 120000, // up to 2 minutes for large participant lists
+  });
+  return res.data as SyncResult;
 };
 
 // Public: Verify ticket code for war kursi

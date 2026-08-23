@@ -7,7 +7,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { getDarisiniSetting, updateDarisiniSetting } from "@/api/settings-api";
 import { toast } from "sonner";
-import { ImportExcel } from "../import-excel";
+import { SyncDarisini } from "../sync-darisini";
+
 
 export default function SettingsPage() {
   const [cookie, setCookie] = useState('');
@@ -50,7 +51,7 @@ export default function SettingsPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-6 px-4 py-4 md:px-6 md:py-6">
-              <ImportExcel />
+              <SyncDarisini />
               <form onSubmit={handleSubmit} className="neo-surface w-full max-w-3xl bg-neo-purple p-6">
                 <div className="flex flex-col gap-2">
                   <h2 className="text-xl font-extrabold">Darisini Scanner</h2>

@@ -58,6 +58,14 @@ export function TableTickets() {
         return "bg-neutral-200 text-neutral-600";
     };
 
+    const normalizeGender = (gender?: string) => {
+        if (!gender) return "-";
+        const g = gender.toLowerCase().trim();
+        if (g === "male" || g.includes("laki") || g === "l" || g === "pria" || g === "m") return "L";
+        if (g === "female" || g.includes("perempuan") || g === "p" || g === "wanita" || g === "f") return "P";
+        return gender;
+    };
+
     const formatDateTime = (iso?: string) => {
         if (!iso) return "-";
         const d = new Date(iso);
@@ -331,18 +339,25 @@ export function TableTickets() {
                                 </TableCell>
                                 <TableCell className="font-medium">{ticket.ticket_code}</TableCell>
                                 <TableCell>
-                                    <div className="flex flex-col gap-0.5">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium truncate">{ticket.name || '-'}</span>
-                                            {ticket.gender && (
-                                                <span className={`shrink-0 rounded-full border border-neo-border px-1.5 py-0.5 text-[10px] font-bold uppercase ${getGenderBadgeClass(ticket.gender)}`}>
-                                                    {ticket.gender}
-                                                </span>
-                                            )}
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neo-purple text-sm font-bold text-white">
+                                            {(ticket.name || "?").charAt(0).toUpperCase()}
                                         </div>
-                                        {ticket.email && (
-                                            <span className="truncate text-xs text-muted-foreground">{ticket.email}</span>
-                                        )}
+                                        <div className="flex min-w-0 flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <span className="truncate font-medium" title={ticket.name || "-"}>
+                                                    {ticket.name || "-"}
+                                                </span>
+                                                {ticket.gender && (
+                                                    <span className={`shrink-0 rounded-full border border-neo-border px-1.5 py-0.5 text-[10px] font-bold uppercase ${getGenderBadgeClass(ticket.gender)}`}>
+                                                        {normalizeGender(ticket.gender)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="truncate text-xs text-muted-foreground" title={ticket.email || ""}>
+                                                {ticket.email || "-"}
+                                            </span>
+                                        </div>
                                     </div>
                                 </TableCell>
                                 <TableCell>{ticket.ticket_name}</TableCell>
@@ -380,8 +395,7 @@ export function TableTickets() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>ID</TableHead>
-                                    <TableHead>Nama</TableHead>
-                                    <TableHead>Email</TableHead>
+                                    <TableHead>Peserta</TableHead>
                                     <TableHead>Ticket</TableHead>
                                     <TableHead>Event</TableHead>
                                 </TableRow>
@@ -390,8 +404,28 @@ export function TableTickets() {
                                 {selectedTickets.map((ticket) => (
                                     <TableRow key={ticket.id}>
                                         <TableCell className="font-medium">{ticket.ticket_code}</TableCell>
-                                        <TableCell>{ticket.name}</TableCell>
-                                        <TableCell>{ticket.email}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neo-purple text-sm font-bold text-white">
+                                                    {(ticket.name || "?").charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="flex min-w-0 flex-col">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="truncate font-medium" title={ticket.name || "-"}>
+                                                            {ticket.name || "-"}
+                                                        </span>
+                                                        {ticket.gender && (
+                                                            <span className={`shrink-0 rounded-full border border-neo-border px-1.5 py-0.5 text-[10px] font-bold uppercase ${getGenderBadgeClass(ticket.gender)}`}>
+                                                                {normalizeGender(ticket.gender)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="truncate text-xs text-muted-foreground" title={ticket.email || ""}>
+                                                        {ticket.email || "-"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{ticket.ticket_name}</TableCell>
                                         <TableCell>{ticket.event?.name ?? ''}</TableCell>
                                     </TableRow>

@@ -31,4 +31,4 @@ export interface BookedSeatsSummary {
    goodie_bag: GoodieBagSummary;
 }
 
-type TicketSummary = Record<string, Record<string, number>>;
+type TicketSummary = Record<string, number>;

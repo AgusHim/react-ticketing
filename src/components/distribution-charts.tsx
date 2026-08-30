@@ -33,8 +33,6 @@ const PALETTE = ["#f5c518", "#2f8f72", "#e85a9e", "#6c63d6", "#ef7b45"]
 const CLAIMED_COLOR = "#2f8f72"
 const UNCLAIMED_COLOR = "#f5c518"
 
-const safeKey = (name: string) => "t_" + name.replace(/[^a-zA-Z0-9]/g, "_")
-
 const KPI_CARDS = [
     "bg-neo-yellow",
     "bg-neo-mint",
@@ -54,41 +52,27 @@ export default function DistributionCharts() {
             .finally(() => setIsLoading(false))
     }, [])
 
-    // --- Ticket distribution: per show, stacked by ticket_name ---
+    // --- Ticket distribution: per category ---
     const ticketChart = useMemo(() => {
         const summary = data?.ticket_summary ?? {}
-        const ticketNameSet = new Set<string>()
-        Object.values(summary).forEach((byName) =>
-            Object.keys(byName).forEach((n) => ticketNameSet.add(n))
-        )
-        const names = Array.from(ticketNameSet).sort()
+        const rows = Object.entries(summary)
+            .map(([category, count], i) => ({
+                category,
+                count,
+                fill: PALETTE[i % PALETTE.length],
+            }))
+            .sort((a, b) => b.count - a.count)
 
-        const rows = Object.entries(summary).map(([show, byName]) => {
-            const row: Record<string, number | string> = { show: show || "Tanpa Show" }
-            names.forEach((n) => {
-                row[safeKey(n)] = byName[n] ?? 0
-            })
-            return row
-        })
+        const config: ChartConfig = {
+            count: { label: "Jumlah Tiket", color: PALETTE[0] },
+        }
 
-        const config: ChartConfig = {}
-        names.forEach((n, i) => {
-            config[safeKey(n)] = {
-                label: n,
-                color: PALETTE[i % PALETTE.length],
-            }
-        })
-
-        return { rows, names, config }
+        return { rows, config }
     }, [data])
 
     const totalTickets = useMemo(() => {
         const summary = data?.ticket_summary ?? {}
-        return Object.values(summary).reduce(
-            (acc, byName) =>
-                acc + Object.values(byName).reduce((sum, c) => sum + c, 0),
-            0
-        )
+        return Object.values(summary).reduce((acc, c) => acc + c, 0)
     }, [data])
 
     // --- Goodie bag distribution ---
@@ -187,12 +171,12 @@ export default function DistributionCharts() {
                 </Card>
             </div>
 
-            {/* Ticket distribution stacked bar */}
+            {/* Ticket distribution per category */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Persebaran Tiket per Show</CardTitle>
+                    <CardTitle>Persebaran Tiket per Kategori</CardTitle>
                     <CardDescription>
-                        Jumlah tiket untuk masing-masing show, dipecah berdasarkan jenis tiket.
+                        Jumlah tiket untuk masing-masing kategori tiket.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -204,23 +188,18 @@ export default function DistributionCharts() {
                             <BarChart data={ticketChart.rows}>
                                 <CartesianGrid vertical={false} />
                                 <XAxis
-                                    dataKey="show"
+                                    dataKey="category"
                                     tickLine={false}
                                     axisLine={false}
                                     tickMargin={8}
                                 />
                                 <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <ChartLegend content={<ChartLegendContent />} />
-                                {ticketChart.names.map((n) => (
-                                    <Bar
-                                        key={n}
-                                        dataKey={safeKey(n)}
-                                        stackId="a"
-                                        fill={`var(--color-${safeKey(n)})`}
-                                        radius={4}
-                                    />
-                                ))}
+                                <Bar dataKey="count" radius={4}>
+                                    {ticketChart.rows.map((row, i) => (
+                                        <Cell key={`cell-${i}`} fill={row.fill} />
+                                    ))}
+                                </Bar>
                             </BarChart>
                         </ChartContainer>
                     ) : (

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
     Bar,
     BarChart,
@@ -43,11 +44,14 @@ const KPI_CARDS = [
 
 export default function DistributionCharts() {
     const [data, setData] = useState<BookedSeatsSummary>()
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
+        setIsLoading(true)
         getDashboardData()
             .then(setData)
             .catch((err) => console.error("Failed to fetch dashboard", err))
+            .finally(() => setIsLoading(false))
     }, [])
 
     // --- Ticket distribution: per show, stacked by ticket_name ---
@@ -121,8 +125,26 @@ export default function DistributionCharts() {
         unclaimed: { label: "Belum Diambil", color: UNCLAIMED_COLOR },
     }
 
-    if (!data) {
-        return null
+    if (isLoading) {
+        return (
+            <div className="px-4 lg:px-6 space-y-6">
+                <div>
+                    <h2 className="text-xl font-extrabold">Persebaran Tiket &amp; Goodie Bag</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Visualisasi distribusi tiket dan status pengambilan goodie bag.
+                    </p>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton key={i} className="h-28 w-full rounded-xl" />
+                    ))}
+                </div>
+                <div className="grid gap-5 lg:grid-cols-3">
+                    <Skeleton className="h-[380px] w-full rounded-xl lg:col-span-2" />
+                    <Skeleton className="h-[380px] w-full rounded-xl" />
+                </div>
+            </div>
+        )
     }
 
     const hasTicketData = totalTickets > 0
